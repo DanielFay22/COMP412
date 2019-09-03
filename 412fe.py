@@ -1,47 +1,8 @@
 
 
 import sys
-from dataclasses import dataclass
+from resources import *
 
-
-
-
-
-
-instructions = [
-    "load",
-    "loadI",
-    "store",
-    "add",
-    "sub",
-    "mult",
-    "lshift",
-    "rshift",
-    "output",
-    "nop"
-]
-
-
-@dataclass
-class Operation(object):
-    opCode: int
-
-    sr1: int
-    vr1: int
-    pr1: int
-    nu1: int
-
-    sr2: int
-    vr2: int
-    pr2: int
-    nu2: int
-
-    sr3: int
-    vr3: int
-    pr3: int
-    nu3: int
-
-    next_op = None
 
 
 class FileReader(object):
@@ -78,6 +39,50 @@ class FileReader(object):
         self.pos += 1
 
         return c
+
+
+
+class InternalRepresentation(object):
+
+    def __init__(self, init_size: int = 1000):
+        self._ir = self._gen_empty_ir(init_size)
+
+        self._head = self._ir
+
+    @staticmethod
+    def _gen_empty_ir(n: int = 1000):
+        """
+        Generates an empty internal representation
+        """
+        l = [[None] * 15 for _ in range(n)]
+
+        for x in range(n - 1):
+            l[x][-2] = l[x + 1]
+            l[x + 1][-1] = l[x]
+
+        return l[0]
+
+    def _expand_ir(self):
+        ir = self._gen_empty_ir()
+
+        self._head[-2] = ir
+        ir[-1] = self._head
+
+    def add_token(self, op: int, r1: int, r2: int, r3: int):
+        """
+        Enters a new operation to the current IR and increments the head.
+        """
+        self._head[0] = op
+        self._head[1] = r1
+        self._head[5] = r2
+        self._head[9] = r3
+
+        if self._head[-2] is None:
+            self._expand_ir()
+
+        self._head = self._head[-2]
+
+
 
 def parse_line(fr: FileReader):
     """
