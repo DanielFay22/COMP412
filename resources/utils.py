@@ -37,7 +37,6 @@ categories = [
     'REGISTER',
     'COMMA'
     'INTO',
-    'NEWLINE',
     'ERROR'
 ]
 
@@ -50,5 +49,4 @@ CONSTANT_CAT    = categories.index('CONSTANT')
 REGISTER_CAT    = categories.index('REGISTER')
 COMMA_CAT       = categories.index('COMMA')
 INTO_CAT        = categories.index('INTO')
-NEWLINE_CAT     = categories.index('NEWLINE')
 ERROR_CAT       = categories.index('ERROR')

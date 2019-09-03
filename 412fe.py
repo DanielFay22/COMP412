@@ -89,6 +89,8 @@ class Scanner(object):
 
         self._fr = fr
 
+        self.ln = 0
+
         self.token_queue = []
 
     def get_token(self, init_char: str = None) -> Token:
@@ -193,6 +195,19 @@ class Scanner(object):
         elif c == '=':
             if self._read_remaining_token('>'):
                 return INTO()
+            else:
+                # return error token
+                pass
+
+        elif c == '\n':
+            self.ln += 1
+            return self.get_token()
+
+        elif c == '/':
+            c2 = self._fr.read_char()
+            if c2 == '/':
+                # read rest of line
+                pass
             else:
                 # return error token
                 pass

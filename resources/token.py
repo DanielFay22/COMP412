@@ -96,14 +96,6 @@ class INTO(Token):
     def name(self):
         return "=>"
 
-class NewLine(Token):
-
-    def __init__(self):
-        super(NewLine, self).__init__(id = NEWLINE_CAT, value = None)
-
-    def name(self):
-        return '\\n'
-
 class Error(Token):
 
     def __init__(self, message: str):
