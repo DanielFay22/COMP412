@@ -33,9 +33,9 @@ categories = [
     'ARITHOP',
     'OUTPUT',
     'NOP',
-    'CONSTANT'
+    'CONSTANT',
     'REGISTER',
-    'COMMA'
+    'COMMA',
     'INTO',
     'ERROR'
 ]
