@@ -16,6 +16,17 @@ instructions = [
     "nop"       # 9
 ]
 
+LOAD_VAL    = 0
+STORE_VAL   = 1
+LOADI_VAL   = 2
+ADD_VAL     = 3
+SUB_VAL     = 4
+MULT_VAL    = 5
+LSHIFT_VAL  = 6
+RSHIFT_VAL  = 7
+OUTPUT_VAL  = 8
+NOP_VAL     = 9
+
 categories = [
     'MEMOP',
     'LOADI',
@@ -25,5 +36,19 @@ categories = [
     'CONSTANT'
     'REGISTER',
     'COMMA'
-    'INTO'
+    'INTO',
+    'NEWLINE',
+    'ERROR'
 ]
+
+MEMOP_CAT       = categories.index('MEMOP')
+LOADI_CAT       = categories.index('LOADI')
+ARITHOP_CAT     = categories.index('ARITHOP')
+OUTPUT_CAT      = categories.index('OUTPUT')
+NOP_CAT         = categories.index('NOP')
+CONSTANT_CAT    = categories.index('CONSTANT')
+REGISTER_CAT    = categories.index('REGISTER')
+COMMA_CAT       = categories.index('COMMA')
+INTO_CAT        = categories.index('INTO')
+NEWLINE_CAT     = categories.index('NEWLINE')
+ERROR_CAT       = categories.index('ERROR')
