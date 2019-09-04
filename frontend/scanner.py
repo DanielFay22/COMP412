@@ -223,10 +223,6 @@ class Scanner(object):
             self.chars.append(self._fr.read_char())
 
         self.chars = self.chars[-1:]
-        # if not c.isspace():
-        #     self.token_queue.append(
-        #         self.get_token(init_char = c)
-        #     )
 
         return s
 

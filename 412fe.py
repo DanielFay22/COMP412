@@ -3,13 +3,28 @@
 import sys
 
 from resources import *
-from core import *
+from frontend import *
 
 
 
 reader = None
 scanner = None
 ir = None
+
+
+def scan(scanner: Scanner):
+    while True:
+        c = scanner.get_token()
+
+        print(repr(c))
+
+        if isinstance(c, ENDFILE):
+            exit(0)
+
+def parse(parser: Parser):
+    # do parsing
+    pass
+
 
 def help_handler():
 
@@ -96,28 +111,29 @@ if __name__ == "__main__":
             error("Must provide a valid file name.")
             exit(1)
 
-
     try:
         reader = FileReader(filename)
     except OSError as o:
         error(f"Unable to open file with name {filename}")
         exit(1)
 
-    scanner = Scanner(fr = reader)
+    scanner = Scanner(fr=reader)
 
-    c = scanner.get_token()
+    # scan and print out results
+    if s:
+        scan(scanner)
 
-    while True:
-        if c:
-            print(repr(c))
+    ir = InternalRepresentation()
+    parser = Parser(scanner = scanner, ir = ir)
 
-        if isinstance(c, ENDFILE):
-            break
+    if p or r:
+        parse(parser)
+
+        if p:
+            print(f"Parse succeeded, finding x ILOC operations.")
         else:
-            c = scanner.get_token()
-
-
-
+            # do r stuff
+            pass
 
 
 
