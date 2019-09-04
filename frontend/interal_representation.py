@@ -1,4 +1,5 @@
 
+from typing import Union
 
 
 class InternalRepresentation(object):
@@ -27,7 +28,11 @@ class InternalRepresentation(object):
         self._head[-2] = ir
         ir[-1] = self._head
 
-    def add_token(self, op: int, r1: int, r2: int, r3: int) -> None:
+    def add_token(
+            self, op: int,
+            r1: Union[int, None],
+            r2: Union[int, None],
+            r3: Union[int, None]) -> None:
         """
         Enters a new operation to the current IR and increments the head.
         """
