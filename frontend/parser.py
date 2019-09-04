@@ -102,3 +102,4 @@ class Parser(object):
         return tokens, True
 
     def _report_error(self, msg: str):
+        pass

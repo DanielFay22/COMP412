@@ -21,6 +21,7 @@ class Scanner(object):
 
         If there is an error during reading, reports the error and returns an Error token.
         """
+        # TODO: check whitespace after ops
 
         if not self.chars:
             c = self._fr.read_char()
@@ -111,6 +112,7 @@ class Scanner(object):
                 else:
                     self._error(self.chars)
 
+            # TODO: recognize leading 0's
             elif c2.isnumeric():
                 if c2 == '0':
                     self.chars = []
@@ -165,7 +167,7 @@ class Scanner(object):
                 self._error(self.chars)
 
         # newline
-        elif c == '\n':
+        elif c == '\n' or c == '\r':
             self.ln += 1
             self.chars = []
             return self.get_token()
