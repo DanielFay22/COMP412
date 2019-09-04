@@ -13,9 +13,7 @@ class Scanner(object):
 
         self._fr = fr
 
-        self.ln = 0
-
-        self.token_queue = []
+        self.ln = 1
 
     def get_token(self) -> Token:
         """
@@ -23,10 +21,7 @@ class Scanner(object):
 
         If there is an error during reading, reports the error and returns an Error token.
         """
-        
 
-        if self.token_queue:
-            return self.token_queue.pop(0)
         if not self.chars:
             c = self._fr.read_char()
             self.chars.append(c)
@@ -208,6 +203,7 @@ class Scanner(object):
         c = self._fr.read_char()
         while c and c != '\n':
             c = self._fr.read_char()
+        self.ln += 1
 
     def _read_remaining_token(self, expected: str) -> bool:
         for e in expected:
