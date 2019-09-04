@@ -1,7 +1,7 @@
 
+from typing import Union, List
 
 from resources import *
-
 from .reader import FileReader
 
 
@@ -21,7 +21,6 @@ class Scanner(object):
 
         If there is an error during reading, reports the error and returns an Error token.
         """
-        # TODO: check whitespace after ops
 
         if not self.chars:
             c = self._fr.read_char()
@@ -31,116 +30,42 @@ class Scanner(object):
 
         # load, loadI, lshift
         if c == 'l':
-            c2 = self._fr.read_char()
-            self.chars.append(c2)
+            r = self._scan_l()
 
-            if c2 == 'o':  # load
-                if self._read_remaining_token("ad"):
-                    self.chars.append(self._fr.read_char())
-
-                    if self.chars[-1] == 'I':
-                        self.chars = []
-                        return LOADI(ln = self.ln)
-                    else:
-                        self.chars = self.chars[-1:]
-                        return MEMOP(ln = self.ln, value = LOAD_VAL)
-
-                else:
-                    self._error(self.chars)
-            elif c2 == 's':  # lshift
-                if self._read_remaining_token("hift"):
-                    self.chars = []
-                    return ARITHOP(value=LSHIFT_VAL, ln = self.ln)
-                else:
-                    # Return error token
-                    self._error(self.chars)
-
-            else:
-                self._error(self.chars)
+            if r: return r
 
         # store, sub
         elif c == 's':
-            c2 = self._fr.read_char()
-            self.chars.append(c2)
+            r = self._scan_s()
 
-            # store
-            if c2 == 't':
-                if self._read_remaining_token("ore"):
-                    self.chars = []
-                    return MEMOP(ln = self.ln, value = STORE_VAL)
-                else:
-                    self._error(self.chars)
-
-            # sub
-            elif c2 == 'u':
-                self.chars.append(self._fr.read_char())
-                if self.chars[-1] == 'b':
-                    self.chars = []
-                    return ARITHOP(ln = self.ln, value = SUB_VAL)
-                else:
-                    self._error(self.chars)
-
-            # error
-            else:
-                self._error(self.chars)
+            if r: return r
 
         # add
         elif c == 'a':
             if self._read_remaining_token("dd"):
-                self.chars = []
                 return ARITHOP(value = ADD_VAL, ln = self.ln)
-            else:
-                self._error(self.chars)
 
         # mult
         elif c == 'm':
             if self._read_remaining_token("ult"):
-                self.chars = []
                 return ARITHOP(value = MULT_VAL, ln = self.ln)
-            else:
-                self._error(self.chars)
 
         # rshift, register
         elif c == 'r':
-            c2 = self._fr.read_char()
-            self.chars.append(c2)
+            r = self._scan_r()
 
-            if c2 == "s":
-                if self._read_remaining_token("hift"):
-                    self.chars = []
-                    return ARITHOP(value = RSHIFT_VAL, ln = self.ln)
-                else:
-                    self._error(self.chars)
-
-            # TODO: recognize leading 0's
-            elif c2.isnumeric():
-                if c2 == '0':
-                    self.chars = []
-                    return REGISTER(value = 0, ln = self.ln)
-                else:
-                    return REGISTER(
-                        value = self._read_constant(first_digit = int(c2)), ln = self.ln
-                    )
-            else:
-                self._error(self.chars)
+            if r: return r
 
         # output
         elif c == 'o':
 
             if self._read_remaining_token("utput"):
-                self.chars = []
                 return OUTPUT(ln = self.ln)
-            else:
-                self._error(self.chars)
 
         # nop
         elif c == 'n':
-
-            if self._read_remaining_token("op"):
-                self.chars = []
+            if self._read_remaining_token("op", whitespace=False):
                 return NOP(ln = self.ln)
-            else:
-                self._error(self.chars)
 
         # comma
         elif c == ',':
@@ -160,11 +85,8 @@ class Scanner(object):
 
         # into
         elif c == '=':
-            if self._read_remaining_token('>'):
-                self.chars = []
+            if self._read_remaining_token('>', whitespace=False):
                 return INTO(ln = self.ln)
-            else:
-                self._error(self.chars)
 
         # newline
         elif c == '\n' or c == '\r':
@@ -183,10 +105,10 @@ class Scanner(object):
                 return self.get_token()
             else:
                 # return error token
-                self._error(self.chars + [c2])
+                self._lexical_error(self.chars + [c2])
 
         # whitespace
-        elif c.isspace():
+        elif c == ' ' or c == '\t':
             self.chars = []
             return self.get_token()
 
@@ -194,25 +116,110 @@ class Scanner(object):
             if not c:  # EOF
                 return ENDFILE(ln = self.ln)
             else:  # Error
-                self._error(self.chars)
+                self._lexical_error(self.chars)
 
         self.chars = []
+
+    def _scan_l(self) -> Union[Token, None]:
+        """
+        Handler for scanning tokens beginning with 'l'.
+        """
+        c2 = self._fr.read_char()
+        self.chars.append(c2)
+
+        if c2 == 'o':  # load
+            if self._read_remaining_token("ad", whitespace=False):
+                f = self._read_remaining_token("I", verbose=False)
+
+                if f:
+                    return LOADI(ln=self.ln)
+                elif (not f) and (self.chars[-1] == ' ' or self.chars[-1] == '\t'):
+                    self.chars = []
+                    return MEMOP(ln=self.ln, value=LOAD_VAL)
+                else:
+                    self._whitespace_error()
+
+        elif c2 == 's':  # lshift
+            if self._read_remaining_token("hift"):
+                return ARITHOP(value=LSHIFT_VAL, ln=self.ln)
+
+        else:
+            self._lexical_error(self.chars)
+
+    def _scan_s(self) -> Union[Token, None]:
+        """
+        Handler for scanning tokens beginning with 's'.
+        """
+        c2 = self._fr.read_char()
+        self.chars.append(c2)
+
+        # store
+        if c2 == 't':
+            if self._read_remaining_token("ore"):
+                return MEMOP(ln=self.ln, value=STORE_VAL)
+
+        # sub
+        elif c2 == 'u':
+            if self._read_remaining_token("b"):
+                return ARITHOP(ln=self.ln, value=SUB_VAL)
+
+        # error
+        else:
+            self._lexical_error(self.chars)
+
+    def _scan_r(self) -> Union[Token, None]:
+        """
+        Handler for scanning tokens beginning with 'r'.
+        """
+        c2 = self._fr.read_char()
+        self.chars.append(c2)
+
+        if c2 == "s":
+            if self._read_remaining_token("hift"):
+                return ARITHOP(value=RSHIFT_VAL, ln=self.ln)
+
+        elif c2.isnumeric():
+            return REGISTER(
+                value=self._read_constant(first_digit=int(c2)), ln=self.ln
+            )
+        else:
+            self._lexical_error(self.chars)
 
     def _read_to_line_end(self):
         """
         Reads characters until it encounters the end of the line.
         """
         c = self._fr.read_char()
-        while c and c != '\n':
+        while c and c != '\n' and c != '\r':
             c = self._fr.read_char()
         self.ln += 1
 
-    def _read_remaining_token(self, expected: str) -> bool:
+    def _read_remaining_token(self, expected: str, whitespace: bool = True, verbose: bool = True) -> bool:
+        """
+        Reads the next n characters (where n is the length of expected) and
+        returns True iff the characters match the expected.
+
+        If whitespace is True, checks that the character following the token is a whitespace character.
+        """
         for e in expected:
             self.chars.append(self._fr.read_char())
             if self.chars[-1] != e:
+                if verbose:
+                    self._lexical_error(self.chars)
                 return False
 
+        # If the character is not whitespace, report the error.
+        # Then clear all but the last character from the buffer
+        # and return True.
+        if whitespace:
+            self.chars.append(self._fr.read_char())
+            if not (self.chars[-1] == ' ' or self.chars[-1] == '\t'):
+                if verbose:
+                    self._whitespace_error()
+                self.chars = self.chars[-1:]
+                return True
+
+        self.chars = []
         return True
 
     def _read_constant(self, first_digit: int) -> int:
@@ -228,8 +235,17 @@ class Scanner(object):
 
         return s
 
-    def _error(self, chars: list) -> None:
+    def _lexical_error(self, chars: List[str]) -> None:
         """
-        Reports error message for scanning.
+        Reports error message for lexical errors.
         """
-        error(f"{self.ln}: Invalid token {''.join(chars)}.", "Lexical Error")
+        error(f"Line {self.ln}: {''.join(chars).strip()} is not a valid word.", "Lexical Error")
+        # self._read_to_line_end()
+
+    def _whitespace_error(self) -> None:
+        """
+        Reports error message for missing whitespace.
+        """
+        error(f"{self.ln}: Op-codes must be followed by whitespace.", "Lexical Error")
+        # self._read_to_line_end()
+

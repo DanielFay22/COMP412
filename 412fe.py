@@ -6,7 +6,6 @@ from resources import *
 from frontend import *
 
 
-
 reader = None
 scanner = None
 ir = None
@@ -16,14 +15,25 @@ def scan(scanner: Scanner):
     while True:
         c = scanner.get_token()
 
-        print(repr(c))
+        if c:
+            print(repr(c))
 
         if isinstance(c, ENDFILE):
             exit(0)
 
-def parse(parser: Parser):
-    # do parsing
-    pass
+def parse(parser: Parser, p: bool):
+    parser.parse()
+
+    if p:
+        if not parser.errors:
+            print(f"Parse succeeded, finding {parser.count} ILOC operations.")
+        else:
+            print(f"Parser found {parser.errors} syntax errors in {parser.ln} lines of input.")
+
+    else:
+        parser.print_ir()
+
+    exit(0)
 
 
 def help_handler():
@@ -41,8 +51,6 @@ def help_handler():
           "\t-s       prints tokens in token stream\n"
           "\t-p       invokes parser and reports on success or failure\n"
           "\t-r       prints human readable version of parser's IR")
-
-
 
 
 if __name__ == "__main__":
@@ -127,13 +135,8 @@ if __name__ == "__main__":
     parser = Parser(scanner = scanner, ir = ir)
 
     if p or r:
-        parse(parser)
+        parse(parser, p)
 
-        if p:
-            print(f"Parse succeeded, finding x ILOC operations.")
-        else:
-            # do r stuff
-            pass
 
 
 

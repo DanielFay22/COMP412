@@ -1,6 +1,8 @@
 
 from typing import Union
 
+from resources import *
+
 
 class InternalRepresentation(object):
 
@@ -8,6 +10,8 @@ class InternalRepresentation(object):
         self._ir = self._gen_empty_ir(init_size)
 
         self._head = self._ir
+
+        self.count = 0
 
     @staticmethod
     def _gen_empty_ir(n: int = 1000) -> list:
@@ -45,3 +49,52 @@ class InternalRepresentation(object):
             self._expand_ir()
 
         self._head = self._head[-2]
+
+        self.count += 1
+
+    def print_ir(self):
+        s = ""
+
+        l = self._ir
+
+        while l is not self._head:
+            s += str([instructions[l[0]]] + l[1:-2:4]) + "\n"
+            l = l[-2]
+
+        print(s)
+
+    def pprint_ir(self):
+        """
+        Prints internal representation as ILOC assembly code.
+        """
+        s = ""
+
+        l = self._ir
+
+        while l is not self._head:
+            s += self._gen_line_str(l)#str([instructions[l[0]]] + l[1:-2:4]) + "\n"
+            l = l[-2]
+
+        print(s)
+
+    @staticmethod
+    def _gen_line_str(l):
+        """
+        Constructs ILOC assembly code for a single operation in IR form.
+        """
+        i = instructions[l[0]]
+
+        regs = l[1:-2:4]
+
+        if not (l[0] == LOADI_VAL or l[0] == OUTPUT_VAL):
+            i += '\tr' + str(regs[0])
+        else:
+            i += '\t' + str(regs[0])
+
+        if regs[1]:
+            i += ',r' + str(regs[1])
+
+        if regs[2]:
+            i += ' => r' + str(regs[2]) + '\n'
+
+        return i
