@@ -1,6 +1,7 @@
 """
 Container for general resources.
 """
+import sys
 
 
 instructions = [
@@ -37,7 +38,7 @@ categories = [
     'REGISTER',
     'COMMA',
     'INTO',
-    'ERROR'
+    'ENDFILE'
 ]
 
 MEMOP_CAT       = categories.index('MEMOP')
@@ -49,4 +50,12 @@ CONSTANT_CAT    = categories.index('CONSTANT')
 REGISTER_CAT    = categories.index('REGISTER')
 COMMA_CAT       = categories.index('COMMA')
 INTO_CAT        = categories.index('INTO')
-ERROR_CAT       = categories.index('ERROR')
+ENDFILE_CAT       = categories.index('ENDFILE')
+
+
+
+def error(msg: str, err_type: str = "Error"):
+    """
+    Prints error message to stderr.
+    """
+    sys.stderr.write(f"{err_type}: {msg}\n")

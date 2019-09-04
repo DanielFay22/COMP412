@@ -121,14 +121,13 @@ class INTO(Token):
     def name(self):
         return "=>"
 
-class Error(Token):
+class ENDFILE(Token):
 
-    def __init__(self, ln: int, message: str):
-        super(Error, self).__init__(
-            id = ERROR_CAT, value = None, ln = ln
+    def __init__(self, ln: int):
+        super(ENDFILE, self).__init__(
+            id = ENDFILE_CAT, value = None, ln = ln
         )
 
-        self.message = message
 
     def name(self):
-        return self.message
+        return ""

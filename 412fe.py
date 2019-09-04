@@ -27,12 +27,6 @@ def help_handler():
           "\t-p       invokes parser and reports on success or failure\n"
           "\t-r       prints human readable version of parser's IR")
 
-def error(msg: str):
-    """
-    Prints error message to stderr.
-    """
-    sys.stderr.write(f"Error: {msg}")
-
 
 
 
@@ -47,7 +41,8 @@ if __name__ == "__main__":
 
     # Invalid
     if not len(argv):
-        pass
+        error("No command line arguments specified.")
+        exit(1)
     else:
         while argv:
             arg = argv.pop(0)
@@ -111,10 +106,15 @@ if __name__ == "__main__":
     scanner = Scanner(fr = reader)
 
     c = scanner.get_token()
-    print(c)
 
-    while c:
-        print(repr(c))
+    while True:
+        if c:
+            print(repr(c))
+
+        if isinstance(c, ENDFILE):
+            break
+        else:
+            c = scanner.get_token()
 
 
 
