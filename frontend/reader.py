@@ -8,7 +8,7 @@ class FileReader(object):
     with an internal buffer to limit overhead.
     """
 
-    bufsize = 4096
+    bufsize = 8192
 
     def __init__(self, fn: str):
         self.file = open(fn, "r")
@@ -18,21 +18,29 @@ class FileReader(object):
 
         self.EOF = False
 
+        self.current_buf_size = 0
+
     def read_buf(self):
         self.buf = self.file.read(self.bufsize)
 
         self.pos = 0
 
-        return len(self.buf)
+        self.current_buf_size = len(self.buf)
 
     def read_char(self):
-        if self.pos >= len(self.buf):
-            s = self.read_buf()
-            if not s:
+        """
+        Return the next character from the buffer, refilling the buffer if necessary.
+        """
+        try:
+
+            self.pos += 1
+            return self.buf[self.pos - 1]
+
+        except IndexError:
+            self.read_buf()
+            if not self.current_buf_size:
                 self.EOF = True
                 return ""
-
-        c = self.buf[self.pos]
-        self.pos += 1
-
-        return c
+            else:
+                self.pos += 1
+                return self.buf[self.pos - 1]

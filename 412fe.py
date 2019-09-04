@@ -5,6 +5,7 @@ import sys
 from resources import *
 from frontend import *
 
+import cProfile
 
 reader = None
 scanner = None
@@ -19,7 +20,7 @@ def scan(scanner: Scanner):
             print(repr(c))
 
         if isinstance(c, ENDFILE):
-            exit(0)
+            return
 
 def parse(parser: Parser, p: bool):
     parser.parse()
@@ -32,8 +33,6 @@ def parse(parser: Parser, p: bool):
 
     else:
         parser.print_ir()
-
-    exit(0)
 
 
 def help_handler():
@@ -59,6 +58,9 @@ if __name__ == "__main__":
     p = False
     s = False
     r = False
+
+    profile = False
+    pr = None
 
     filename = None
 
@@ -102,6 +104,10 @@ if __name__ == "__main__":
 
                 r = True
 
+            # profile
+            elif arg == "-P":
+                profile = True
+
             else:
                 if filename is None:
                     filename = arg
@@ -125,17 +131,25 @@ if __name__ == "__main__":
         error(f"Unable to open file with name {filename}")
         exit(1)
 
+    if profile:
+        pr = cProfile.Profile()
+        pr.enable()
+
     scanner = Scanner(fr=reader)
 
     # scan and print out results
     if s:
         scan(scanner)
+    else:
+        ir = InternalRepresentation()
+        parser = Parser(scanner = scanner, ir = ir)
 
-    ir = InternalRepresentation()
-    parser = Parser(scanner = scanner, ir = ir)
-
-    if p or r:
         parse(parser, p)
+
+    if profile:
+        pr.create_stats()
+        pr.print_stats(sort = 'ncalls')
+
 
 
 
