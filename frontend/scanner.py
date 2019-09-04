@@ -118,7 +118,7 @@ class Scanner(object):
             else:  # Error
                 self._lexical_error(self.chars)
 
-        self.chars = []
+        self.chars *= 0
 
     def _scan_l(self) -> Union[Token, None]:
         """
@@ -216,10 +216,12 @@ class Scanner(object):
             if not (self.chars[-1] == ' ' or self.chars[-1] == '\t'):
                 if verbose:
                     self._whitespace_error()
-                self.chars = self.chars[-1:]
+
+                # clear all but the last character
+                del self.chars[:-1]
                 return True
 
-        self.chars = []
+        self.chars *= 0
         return True
 
     def _read_constant(self, first_digit: int) -> int:
@@ -231,7 +233,7 @@ class Scanner(object):
             s = s * 10 + int(self.chars[-1])
             self.chars.append(self._fr.read_char())
 
-        self.chars = self.chars[-1:]
+        del self.chars[:-1]
 
         return s
 

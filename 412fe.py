@@ -148,7 +148,7 @@ if __name__ == "__main__":
 
     if profile:
         pr.create_stats()
-        pr.print_stats(sort = 'ncalls')
+        pr.print_stats(sort = 'tottime')
 
 
 
