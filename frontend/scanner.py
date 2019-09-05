@@ -1,6 +1,4 @@
 
-# from typing import Union, List, Tuple
-
 from resources import *
 from .reader import FileReader
 
@@ -79,12 +77,12 @@ class Scanner(object):
 
         # constant
         elif c in DIGITS:
-            if c == '0':
-                self.chars *= 0
-                return CONSTANT_CAT, 0, self.ln
-            else:
-                # read_constant() handles clearing character buffer
-                return CONSTANT_CAT, self._read_constant(first_digit = int(c)), self.ln
+            # if c == '0':
+            #     self.chars *= 0
+            #     return CONSTANT_CAT, 0, self.ln
+            # else:
+            # read_constant() handles clearing character buffer
+            return CONSTANT_CAT, self._read_constant(first_digit = int(c)), self.ln
 
         # into
         elif c == '=':
