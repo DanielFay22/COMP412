@@ -17,10 +17,10 @@ def scan(scanner: Scanner):
         c = scanner.get_token()
 
         if c:
-            print(repr(c))
+            print_token(c)
 
-        if c.id == ENDFILE_CAT:
-            return
+            if c[TOK_ID] == ENDFILE_CAT:
+                return
 
 def parse(parser: Parser, p: bool):
     parser.parse()
@@ -46,10 +46,10 @@ def help_handler():
           "\n"
           "Optional flags:\n"
           "\t-h       prints this message\n"
-          "\t-l       Opens log file \"./Log\" and starts logging.\n"
           "\t-s       prints tokens in token stream\n"
           "\t-p       invokes parser and reports on success or failure\n"
-          "\t-r       prints human readable version of parser's IR")
+          "\t-r       prints human readable version of parser's IR\n"
+          "\t-P       Enables profiling.")
 
 
 if __name__ == "__main__":
@@ -148,6 +148,7 @@ if __name__ == "__main__":
 
     if profile:
         pr.create_stats()
+        pr.dump_stats("prof.prof")
         pr.print_stats(sort = 'tottime')
 
 
