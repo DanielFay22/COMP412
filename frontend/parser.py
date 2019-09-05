@@ -50,7 +50,8 @@ class Parser(object):
             elif tok[TOK_ID] == ENDFILE_CAT:
                 break
             else:   # register, comma, and constant are all invalid tokens
-                error(f"Line {tok[TOK_LN]}: Operation starts with invalid opcode: '{tok_name(tok)}'.")
+                error("Line {0}: Operation starts with invalid opcode: '{1}'."
+                      .format(tok[TOK_LN], tok_name(tok)))
                 # self._next_line()
                 self.errors += 1
 
@@ -65,7 +66,8 @@ class Parser(object):
 
         else:
             self.errors += 1
-            self._report_error(f"Encountered error parsing {tok_name(tok)} on line {tok[TOK_LN]}.")
+            self._report_error("Encountered error parsing {0} on line {1}."
+                               .format(tok_name(tok),tok[TOK_LN]))
 
     def _parse_loadi(self, tok):
         """
@@ -81,11 +83,11 @@ class Parser(object):
             self.errors += 1
 
             if len(tokens) == 1:
-                self._report_error(f"Missing constant in loadI in line {tok[TOK_LN]}.")
+                self._report_error("Missing constant in loadI in line {}.".format(tok[TOK_LN]))
             elif len(tokens) == 2:
-                self._report_error(f"Missing \"=>\" in loadI in line {tok[TOK_LN]}.")
+                self._report_error("Missing \"=>\" in loadI in line {}.".format(tok[TOK_LN]))
             elif len(tokens) == 3:
-                self._report_error(f"Missing target register in loadI in line {tok[TOK_LN]}.")
+                self._report_error("Missing target register in loadI in line {}.".format(tok[TOK_LN]))
             else:
                 # this should never happen
                 assert False
@@ -104,7 +106,8 @@ class Parser(object):
             self._ir.add_token(tok[TOK_VAL], tokens[0][TOK_VAL], tokens[2][TOK_VAL], tokens[4][TOK_VAL])
         else:
             self.errors += 1
-            self._report_error(f"Encountered error parsing {tok_name(tok)} on line {tok[TOK_LN]}.")
+            self._report_error("Encountered error parsing {0} on line {1}."
+                               .format(tok_name(tok), tok[TOK_LN]))
             # if len(tokens)
 
     def _parse_output(self, tok):
@@ -115,7 +118,7 @@ class Parser(object):
 
         else:
             self.errors += 1
-            self._report_error(f"Encountered error parsing {tok_name(tok)} on line {tok[TOK_LN]}.")
+            self._report_error("Encountered error parsing {0} on line {1}.".format(tok_name(tok), tok[TOK_LN]))
 
     def _parse_nop(self, tok):
         """

@@ -27,9 +27,11 @@ def parse(parser: Parser, p: bool):
 
     if p:
         if not parser.errors:
-            print(f"Parse succeeded, finding {parser.count} ILOC operations.")
+            print("Parse succeeded, finding {0} ILOC operations.".format(parser.count))
         else:
-            print(f"Parser found {parser.errors} syntax errors in {parser.ln} lines of input.")
+            print("Parser found {0} syntax errors in {1} lines of input."
+                  .format(parser.errors, parser.ln)
+                  )
 
     else:
         parser.print_ir()
@@ -128,7 +130,7 @@ if __name__ == "__main__":
     try:
         reader = FileReader(filename)
     except OSError as o:
-        error(f"Unable to open file with name {filename}")
+        error("Unable to open file with name {0}".format(filename))
         exit(1)
 
     if profile:

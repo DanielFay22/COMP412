@@ -246,13 +246,15 @@ class Scanner(object):
         """
         Reports error message for lexical errors.
         """
-        error(f"Line {self.ln}: \"{''.join(chars).strip()}\" is not a valid word.", "Lexical Error")
+        error("Line {0}: \"{1}\" is not a valid word."
+              .format(self.ln, ''.join(chars).strip()), "Lexical Error")
         self._read_to_line_end()
 
     def _whitespace_error(self) -> None:
         """
         Reports error message for missing whitespace.
         """
-        error(f"Line {self.ln}: Op-codes must be followed by whitespace.", "Lexical Error")
+        error("Line {}: Op-codes must be followed by whitespace."
+              .format(self.ln), "Lexical Error")
         self._read_to_line_end()
 
