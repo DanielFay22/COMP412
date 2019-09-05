@@ -14,7 +14,6 @@ class Parser(object):
 
         self.errors = 0
 
-        self.token_queue = []
         self._next_token = None
 
     @property
@@ -38,20 +37,21 @@ class Parser(object):
             if not tok:
                 continue
 
-            if tok.id == MEMOP_CAT:
+            if tok[TOK_ID] == MEMOP_CAT:
                 self._parse_memop(tok)
-            elif tok.id == LOADI_CAT:
+            elif tok[TOK_ID] == LOADI_CAT:
                 self._parse_loadi(tok)
-            elif tok.id == ARITHOP_CAT:
+            elif tok[TOK_ID] == ARITHOP_CAT:
                 self._parse_arithop(tok)
-            elif tok.id == OUTPUT_CAT:
+            elif tok[TOK_ID] == OUTPUT_CAT:
                 self._parse_output(tok)
-            elif tok.id == NOP_CAT:
+            elif tok[TOK_ID] == NOP_CAT:
                 self._parse_nop(tok)
-            elif tok.id == ENDFILE_CAT:
+            elif tok[TOK_ID] == ENDFILE_CAT:
                 break
             else:   # register, comma, and constant are all invalid tokens
-                error(f"Line {self._scanner.ln}: Operation starts with invalid opcode: '{tok.name()}'.")
+                error(f"Line {tok[TOK_LN]}: Operation starts with invalid opcode: '{tok_name(tok)}'.")
+                self._next_line(tok)
                 self.errors += 1
 
     def _parse_memop(self, tok):
@@ -61,13 +61,13 @@ class Parser(object):
         tokens, t = self._load_tokens([REGISTER_CAT, INTO_CAT, REGISTER_CAT])
 
         if t:
-            self._ir.add_token(tok.val, tokens[0].val, None, tokens[2].val)
+            self._ir.add_token(tok[TOK_VAL], tokens[0][TOK_VAL], None, tokens[2][TOK_VAL])
 
         else:
             self.errors += 1
-            self._report_error(f"Encountered error parsing {tok.name()} on line {tok.ln}.")
+            self._report_error(f"Encountered error parsing {tok_name(tok)} on line {tok[TOK_LN]}.")
 
-    def _parse_loadi(self, tok: Token):
+    def _parse_loadi(self, tok):
         """
         A loadI command must be followed by a constant, into, and then register.
         """
@@ -75,22 +75,22 @@ class Parser(object):
 
         # correct grammar, build IR
         if t:
-            self._ir.add_token(tok.val, tokens[0].val, None, tokens[2].val)
+            self._ir.add_token(tok[TOK_VAL], tokens[0][TOK_VAL], None, tokens[2][TOK_VAL])
         # error, report error and continue
         else:
             self.errors += 1
 
             if len(tokens) == 1:
-                self._report_error(f"Missing constant in loadI in line {tok.ln}.")
+                self._report_error(f"Missing constant in loadI in line {tok[TOK_LN]}.")
             elif len(tokens) == 2:
-                self._report_error(f"Missing \"=>\" in loadI in line {tok.ln}.")
+                self._report_error(f"Missing \"=>\" in loadI in line {tok[TOK_LN]}.")
             elif len(tokens) == 3:
-                self._report_error(f"Missing target register in loadI in line {tok.ln}.")
+                self._report_error(f"Missing target register in loadI in line {tok[TOK_LN]}.")
             else:
                 # this should never happen
                 assert False
 
-    def _parse_arithop(self, tok: Token):
+    def _parse_arithop(self, tok):
         """
         ARITHOP's (add, sub, mult, rshift, lshift) must have
         two source registers and one target register.
@@ -101,27 +101,27 @@ class Parser(object):
         tokens, t = self._load_tokens([REGISTER_CAT, COMMA_CAT, REGISTER_CAT, INTO_CAT, REGISTER_CAT])
 
         if t:
-            self._ir.add_token(tok.val, tokens[0].val, tokens[2].val, tokens[4].val)
+            self._ir.add_token(tok[TOK_VAL], tokens[0][TOK_VAL], tokens[2][TOK_VAL], tokens[4][TOK_VAL])
         else:
             self.errors += 1
-            self._report_error(f"Encountered error parsing {tok.name()} on line {tok.ln}.")
+            self._report_error(f"Encountered error parsing {tok_name(tok)} on line {tok[TOK_LN]}.")
             # if len(tokens)
 
     def _parse_output(self, tok):
         tokens, t = self._load_tokens([CONSTANT_CAT])
 
         if t:
-            self._ir.add_token(tok.val, tokens[0].val, None, None)
+            self._ir.add_token(tok[TOK_VAL], tokens[0][TOK_VAL], None, None)
 
         else:
             self.errors += 1
-            self._report_error(f"Encountered error parsing {tok.name()} on line {tok.ln}.")
+            self._report_error(f"Encountered error parsing {tok_name(tok)} on line {tok[TOK_LN]}.")
 
     def _parse_nop(self, tok):
         """
         nop's have no required parameters.
         """
-        self._ir.add_token(tok.val, None, None, None)
+        self._ir.add_token(tok[TOK_VAL], None, None, None)
 
     def _load_tokens(self, expected: list):
 
@@ -130,7 +130,7 @@ class Parser(object):
         for i, e in enumerate(expected):
             tokens[i] = self._scanner.get_token()
 
-            if not tokens[i] or tokens[i].id != e:
+            if not tokens[i] or tokens[i][TOK_ID] != e:
                 self._next_token = tokens[i]
                 return tokens[:i + 1], False
 
@@ -141,7 +141,23 @@ class Parser(object):
 
         """
         error(msg)
+        self._next_line()
 
 
     def print_ir(self):
         self._ir.print_ir()
+
+    def _next_line(self):
+
+        if self._next_token:
+            tok = self._next_token
+        else:
+            return
+
+        t2 = self._scanner.get_token()
+
+        while t2[TOK_LN] == tok[TOK_LN]:
+            tok = t2
+            t2 = self._scanner.get_token()
+
+        self._next_token = t2

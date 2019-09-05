@@ -50,16 +50,22 @@ CONSTANT_CAT    = categories.index('CONSTANT')
 REGISTER_CAT    = categories.index('REGISTER')
 COMMA_CAT       = categories.index('COMMA')
 INTO_CAT        = categories.index('INTO')
-ENDFILE_CAT       = categories.index('ENDFILE')
+ENDFILE_CAT     = categories.index('ENDFILE')
 
 
 DIGITS = '0123456789'
 WHITESPACE = ' \t'
 NEWLINES = '\n\r'
 
+# indices for each component of the token structure
+TOK_ID  = 0
+TOK_VAL = 1
+TOK_LN  = 2
 
 def error(msg: str, err_type: str = "Error"):
     """
     Prints error message to stderr.
     """
     sys.stderr.write(f"{err_type}: {msg}\n")
+    
+    
