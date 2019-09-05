@@ -51,7 +51,7 @@ class Parser(object):
                 break
             else:   # register, comma, and constant are all invalid tokens
                 error(f"Line {tok[TOK_LN]}: Operation starts with invalid opcode: '{tok_name(tok)}'.")
-                self._next_line(tok)
+                # self._next_line()
                 self.errors += 1
 
     def _parse_memop(self, tok):
@@ -127,8 +127,10 @@ class Parser(object):
 
         tokens = [None] * len(expected)
 
+        gt = self._scanner.get_token
+
         for i, e in enumerate(expected):
-            tokens[i] = self._scanner.get_token()
+            tokens[i] = gt()
 
             if not tokens[i] or tokens[i][TOK_ID] != e:
                 self._next_token = tokens[i]
@@ -136,12 +138,12 @@ class Parser(object):
 
         return tokens, True
 
-    def _report_error(self, msg: str):
+    @staticmethod
+    def _report_error(msg: str):
         """
 
         """
         error(msg)
-        self._next_line()
 
 
     def print_ir(self):

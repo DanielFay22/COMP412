@@ -19,8 +19,8 @@ def scan(scanner: Scanner):
         if c:
             print_token(c)
 
-        if c[TOK_ID] == ENDFILE_CAT:
-            return
+            if c[TOK_ID] == ENDFILE_CAT:
+                return
 
 def parse(parser: Parser, p: bool):
     parser.parse()
@@ -148,6 +148,7 @@ if __name__ == "__main__":
 
     if profile:
         pr.create_stats()
+        pr.dump_stats("prof.prof")
         pr.print_stats(sort = 'tottime')
 
 

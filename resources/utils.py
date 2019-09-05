@@ -1,8 +1,6 @@
 """
 Container for general resources.
 """
-import sys
-
 
 instructions = [
     "load",     # 0
@@ -61,11 +59,5 @@ NEWLINES = '\n\r'
 TOK_ID  = 0
 TOK_VAL = 1
 TOK_LN  = 2
-
-def error(msg: str, err_type: str = "Error"):
-    """
-    Prints error message to stderr.
-    """
-    sys.stderr.write(f"{err_type}: {msg}\n")
     
     

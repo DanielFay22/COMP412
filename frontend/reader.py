@@ -8,7 +8,7 @@ class FileReader(object):
     with an internal buffer to limit overhead.
     """
 
-    bufsize = 8192
+    bufsize = 8192*2
 
     def __init__(self, fn: str):
         self.file = open(fn, "r")
@@ -34,9 +34,16 @@ class FileReader(object):
 
         except IndexError:
             self.read_buf()
-            if not self.buf:
-                self.EOF = True
-                return None
-            else:
+
+            try:
                 self.pos += 1
                 return self.buf[self.pos - 1]
+
+            except IndexError:
+                self.EOF = True
+                return None
+
+    def close(self):
+        self.file.close()
+        del self
+

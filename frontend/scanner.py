@@ -21,9 +21,11 @@ class Scanner(object):
 
         If there is an error during reading, reports the error and returns an Error token.
         """
-
+        # map function to local variable
+        read_char = self._fr.read_char
+        
         if not self.chars:
-            c = self._fr.read_char()
+            c = read_char()
             self.chars.append(c)
         else:
             c = self.chars[-1]
@@ -97,7 +99,7 @@ class Scanner(object):
 
         # comment
         elif c == '/':
-            c2 = self._fr.read_char()
+            c2 = read_char()
             self.chars.append(c2)
 
             if c2 == '/':
@@ -109,7 +111,7 @@ class Scanner(object):
                 # return error token
                 self._lexical_error(self.chars)
 
-        # WHITESPACE
+        # whitespace
         elif c in WHITESPACE:
             self.chars *= 0
             return self.get_token()
@@ -188,9 +190,10 @@ class Scanner(object):
         """
         Reads characters until it encounters the end of the line.
         """
-        c = self._fr.read_char()
+        new_char = self._fr.read_char
+        c = new_char()
         while c and c not in NEWLINES:
-            c = self._fr.read_char()
+            c = new_char()
         self.ln += 1
 
     def _read_remaining_token(self, expected: str, ws: bool = True, verbose: bool = True) -> bool:
@@ -198,10 +201,11 @@ class Scanner(object):
         Reads the next n characters (where n is the length of expected) and
         returns True iff the characters match the expected.
 
-        If WHITESPACE is True, checks that the character following the token is a WHITESPACE character.
+        If whitespace is True, checks that the character following the token is a whitespace character.
         """
+        append = self.chars.append
         for e in expected:
-            self.chars.append(self._fr.read_char())
+            append(self._fr.read_char())
             if self.chars[-1] != e:
                 if verbose:
                     self._lexical_error(self.chars)
@@ -210,16 +214,16 @@ class Scanner(object):
         # If the character is not WHITESPACE, report the error.
         # Then clear all but the last character from the buffer
         # and return True.
-        if ws:
-            c = self._fr.read_char()
-            if not c in WHITESPACE:
-                if verbose:
-                    self._whitespace_error()
-
-                # clear all but the last character
-                self.chars[0] = c
-                del self.chars[1:]
-                return True
+        # if ws:
+        #     c = self._fr.read_char()
+        #     if not c in WHITESPACE:
+        #         if verbose:
+        #             self._whitespace_error()
+        #
+        #         # clear all but the last character
+        #         self.chars[0] = c
+        #         del self.chars[1:]
+        #         return True
 
         self.chars *= 0
         return True
@@ -242,13 +246,13 @@ class Scanner(object):
         """
         Reports error message for lexical errors.
         """
-        error(f"Line {self.ln}: {''.join(chars).strip()} is not a valid word.", "Lexical Error")
-        # self._read_to_line_end()
+        error(f"Line {self.ln}: \"{''.join(chars).strip()}\" is not a valid word.", "Lexical Error")
+        self._read_to_line_end()
 
     def _whitespace_error(self) -> None:
         """
-        Reports error message for missing WHITESPACE.
+        Reports error message for missing whitespace.
         """
-        error(f"{self.ln}: Op-codes must be followed by WHITESPACE.", "Lexical Error")
-        # self._read_to_line_end()
+        error(f"Line {self.ln}: Op-codes must be followed by whitespace.", "Lexical Error")
+        self._read_to_line_end()
 
