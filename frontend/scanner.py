@@ -1,5 +1,5 @@
 
-from typing import Union, List, Tuple
+# from typing import Union, List, Tuple
 
 from resources import *
 from .reader import FileReader
@@ -122,7 +122,7 @@ class Scanner(object):
 
         self.chars *= 0
 
-    def _scan_l(self) -> Union[tuple, None]:
+    def _scan_l(self) -> tuple:
         """
         Handler for scanning tokens beginning with 'l'.
         """
@@ -148,7 +148,7 @@ class Scanner(object):
         else:
             self._lexical_error(self.chars)
 
-    def _scan_s(self) -> Union[tuple, None]:
+    def _scan_s(self) -> tuple:
         """
         Handler for scanning tokens beginning with 's'.
         """
@@ -169,7 +169,7 @@ class Scanner(object):
         else:
             self._lexical_error(self.chars)
 
-    def _scan_r(self) -> Union[tuple, None]:
+    def _scan_r(self) -> tuple:
         """
         Handler for scanning tokens beginning with 'r'.
         """
@@ -242,7 +242,7 @@ class Scanner(object):
 
         return s
 
-    def _lexical_error(self, chars: List[str]) -> None:
+    def _lexical_error(self, chars: list) -> None:
         """
         Reports error message for lexical errors.
         """

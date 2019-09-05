@@ -1,7 +1,5 @@
 
 
-
-
 class FileReader(object):
     """
     Buffered IO object. Supports reading a file one character at a time,
