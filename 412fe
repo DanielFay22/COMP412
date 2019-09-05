@@ -1,2 +1,2 @@
 #!/bin/bash
-python 412fe.py $@
+python3 412fe.py $@
