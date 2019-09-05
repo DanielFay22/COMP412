@@ -67,7 +67,7 @@ class Scanner(object):
 
         # nop
         elif c == 'n':
-            if self._read_remaining_token("op", ws=False):
+            if self._read_remaining_token("op"):
                 return NOP_CAT, NOP_VAL, self.ln
 
         # comma
@@ -77,16 +77,11 @@ class Scanner(object):
 
         # constant
         elif c in DIGITS:
-            # if c == '0':
-            #     self.chars *= 0
-            #     return CONSTANT_CAT, 0, self.ln
-            # else:
-            # read_constant() handles clearing character buffer
             return CONSTANT_CAT, self._read_constant(first_digit = int(c)), self.ln
 
         # into
         elif c == '=':
-            if self._read_remaining_token('>', ws=False):
+            if self._read_remaining_token('>'):
                 return INTO_CAT, None, self.ln
 
         # newline
@@ -128,7 +123,7 @@ class Scanner(object):
         self.chars.append(c2)
 
         if c2 == 'o':  # load
-            if self._read_remaining_token("ad", ws=False):
+            if self._read_remaining_token("ad"):
                 f = self._read_remaining_token("I", verbose=False)
 
                 if f:
@@ -194,7 +189,7 @@ class Scanner(object):
             c = new_char()
         self.ln += 1
 
-    def _read_remaining_token(self, expected: str, ws: bool = True, verbose: bool = True) -> bool:
+    def _read_remaining_token(self, expected: str, verbose: bool = True) -> bool:
         """
         Reads the next n characters (where n is the length of expected) and
         returns True iff the characters match the expected.
@@ -208,20 +203,6 @@ class Scanner(object):
                 if verbose:
                     self._lexical_error(self.chars)
                 return False
-
-        # If the character is not WHITESPACE, report the error.
-        # Then clear all but the last character from the buffer
-        # and return True.
-        # if ws:
-        #     c = self._fr.read_char()
-        #     if not c in WHITESPACE:
-        #         if verbose:
-        #             self._whitespace_error()
-        #
-        #         # clear all but the last character
-        #         self.chars[0] = c
-        #         del self.chars[1:]
-        #         return True
 
         self.chars *= 0
         return True
