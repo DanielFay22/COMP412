@@ -18,14 +18,10 @@ class FileReader(object):
 
         self.EOF = False
 
-        self.current_buf_size = 0
-
     def read_buf(self):
         self.buf = self.file.read(self.bufsize)
 
         self.pos = 0
-
-        self.current_buf_size = len(self.buf)
 
     def read_char(self):
         """
@@ -38,9 +34,9 @@ class FileReader(object):
 
         except IndexError:
             self.read_buf()
-            if not self.current_buf_size:
+            if not self.buf:
                 self.EOF = True
-                return ""
+                return None
             else:
                 self.pos += 1
                 return self.buf[self.pos - 1]

@@ -28,8 +28,11 @@ class Scanner(object):
         else:
             c = self.chars[-1]
 
+        if not c:  # EOF
+            return ENDFILE(ln=self.ln)
+
         # load, loadI, lshift
-        if c == 'l':
+        elif c == 'l':
             r = self._scan_l()
 
             if r: return r
@@ -64,18 +67,18 @@ class Scanner(object):
 
         # nop
         elif c == 'n':
-            if self._read_remaining_token("op", whitespace=False):
+            if self._read_remaining_token("op", ws=False):
                 return NOP(ln = self.ln)
 
         # comma
         elif c == ',':
-            self.chars = []
+            self.chars *= 0
             return COMMA(ln = self.ln)
 
         # constant
-        elif c.isnumeric():
+        elif c in DIGITS:
             if c == '0':
-                self.chars = []
+                self.chars *= 0
                 return CONSTANT(value = 0, ln = self.ln)
             else:
                 # read_constant() handles clearing character buffer
@@ -85,38 +88,37 @@ class Scanner(object):
 
         # into
         elif c == '=':
-            if self._read_remaining_token('>', whitespace=False):
+            if self._read_remaining_token('>', ws=False):
                 return INTO(ln = self.ln)
 
         # newline
-        elif c == '\n' or c == '\r':
+        elif c in NEWLINES:
             self.ln += 1
-            self.chars = []
+            self.chars *= 0
             return self.get_token()
 
         # comment
         elif c == '/':
             c2 = self._fr.read_char()
+            self.chars.append(c2)
 
             if c2 == '/':
                 # read rest of line
                 self._read_to_line_end()
-                self.chars = []
+                self.chars *= 0
                 return self.get_token()
             else:
                 # return error token
-                self._lexical_error(self.chars + [c2])
+                self._lexical_error(self.chars)
 
-        # whitespace
-        elif c == ' ' or c == '\t':
-            self.chars = []
+        # WHITESPACE
+        elif c in WHITESPACE:
+            self.chars *= 0
             return self.get_token()
 
         else:
-            if not c:  # EOF
-                return ENDFILE(ln = self.ln)
-            else:  # Error
-                self._lexical_error(self.chars)
+            # Error
+            self._lexical_error(self.chars)
 
         self.chars *= 0
 
@@ -128,7 +130,7 @@ class Scanner(object):
         self.chars.append(c2)
 
         if c2 == 'o':  # load
-            if self._read_remaining_token("ad", whitespace=False):
+            if self._read_remaining_token("ad", ws=False):
                 f = self._read_remaining_token("I", verbose=False)
 
                 if f:
@@ -178,7 +180,7 @@ class Scanner(object):
             if self._read_remaining_token("hift"):
                 return ARITHOP(value=RSHIFT_VAL, ln=self.ln)
 
-        elif c2.isnumeric():
+        elif c2 in DIGITS:
             return REGISTER(
                 value=self._read_constant(first_digit=int(c2)), ln=self.ln
             )
@@ -190,16 +192,16 @@ class Scanner(object):
         Reads characters until it encounters the end of the line.
         """
         c = self._fr.read_char()
-        while c and c != '\n' and c != '\r':
+        while c and c not in NEWLINES:
             c = self._fr.read_char()
         self.ln += 1
 
-    def _read_remaining_token(self, expected: str, whitespace: bool = True, verbose: bool = True) -> bool:
+    def _read_remaining_token(self, expected: str, ws: bool = True, verbose: bool = True) -> bool:
         """
         Reads the next n characters (where n is the length of expected) and
         returns True iff the characters match the expected.
 
-        If whitespace is True, checks that the character following the token is a whitespace character.
+        If WHITESPACE is True, checks that the character following the token is a WHITESPACE character.
         """
         for e in expected:
             self.chars.append(self._fr.read_char())
@@ -208,17 +210,18 @@ class Scanner(object):
                     self._lexical_error(self.chars)
                 return False
 
-        # If the character is not whitespace, report the error.
+        # If the character is not WHITESPACE, report the error.
         # Then clear all but the last character from the buffer
         # and return True.
-        if whitespace:
-            self.chars.append(self._fr.read_char())
-            if not (self.chars[-1] == ' ' or self.chars[-1] == '\t'):
+        if ws:
+            c = self._fr.read_char()
+            if not c in WHITESPACE:
                 if verbose:
                     self._whitespace_error()
 
                 # clear all but the last character
-                del self.chars[:-1]
+                self.chars[0] = c
+                del self.chars[1:]
                 return True
 
         self.chars *= 0
@@ -227,13 +230,14 @@ class Scanner(object):
     def _read_constant(self, first_digit: int) -> int:
 
         s = first_digit
-        self.chars.append(self._fr.read_char())
+        c = self._fr.read_char()
 
-        while self.chars[-1].isnumeric():
-            s = s * 10 + int(self.chars[-1])
-            self.chars.append(self._fr.read_char())
+        while c in DIGITS:
+            s = s * 10 + int(c)
+            c = self._fr.read_char()
 
-        del self.chars[:-1]
+        self.chars[0] = c
+        del self.chars[1:]
 
         return s
 
@@ -246,8 +250,8 @@ class Scanner(object):
 
     def _whitespace_error(self) -> None:
         """
-        Reports error message for missing whitespace.
+        Reports error message for missing WHITESPACE.
         """
-        error(f"{self.ln}: Op-codes must be followed by whitespace.", "Lexical Error")
+        error(f"{self.ln}: Op-codes must be followed by WHITESPACE.", "Lexical Error")
         # self._read_to_line_end()
 

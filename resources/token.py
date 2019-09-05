@@ -15,7 +15,7 @@ class Token(object):
         self.ln = ln
 
     def name(self):
-        return "TOKEN"
+        return instructions[self.val]
 
     def __repr__(self):
         return str(self.ln) + \
@@ -27,16 +27,12 @@ class Token(object):
                "\" >"
 
 
-class Op(Token):
 
-    def __init__(self, id: int, ln: int, value: int):
-        super(Op, self).__init__(id = id, value = value, ln = ln)
-
-    def name(self):
-        return instructions[self.val]
+# def MEMOP(ln: int, value: int):
+#     return MEMOP_CAT, value, ln
 
 # Category 0
-class MEMOP(Op):
+class MEMOP(Token):
 
     def __init__(self, ln: int, value: int):
         super(MEMOP, self).__init__(
@@ -44,7 +40,7 @@ class MEMOP(Op):
         )
 
 # Category 1
-class LOADI(Op):
+class LOADI(Token):
 
     # Only token value is "loadI", which has value 2
     def __init__(self, ln: int, value: int = None):
@@ -53,7 +49,7 @@ class LOADI(Op):
         )
 
 # Category 2
-class ARITHOP(Op):
+class ARITHOP(Token):
 
     def __init__(self, ln: int, value: int):
         super(ARITHOP, self).__init__(
@@ -61,7 +57,7 @@ class ARITHOP(Op):
         )
 
 # Category 3
-class OUTPUT(Op):
+class OUTPUT(Token):
 
     # Only token value is "output", which has value 8
     def __init__(self, ln: int, value: int = None):
@@ -70,7 +66,7 @@ class OUTPUT(Op):
         )
 
 # Category 4
-class NOP(Op):
+class NOP(Token):
 
     # Only token value is "nop", which has value 9
     def __init__(self, ln: int, value: int = None):
@@ -121,6 +117,7 @@ class INTO(Token):
     def name(self):
         return "=>"
 
+# Category 9
 class ENDFILE(Token):
 
     def __init__(self, ln: int):

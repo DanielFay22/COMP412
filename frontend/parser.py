@@ -15,6 +15,7 @@ class Parser(object):
         self.errors = 0
 
         self.token_queue = []
+        self._next_token = None
 
     @property
     def ln(self):
@@ -28,8 +29,9 @@ class Parser(object):
     def parse(self):
 
         while True:
-            if self.token_queue:
-                tok = self.token_queue.pop(0)
+            if self._next_token:
+                tok = self._next_token
+                self._next_token = None
             else:
                 tok = self._scanner.get_token()
 
@@ -123,14 +125,14 @@ class Parser(object):
 
     def _load_tokens(self, expected: list):
 
-        tokens = []
+        tokens = [None] * len(expected)
 
-        for i in expected:
-            tokens.append(self._scanner.get_token())
+        for i, e in enumerate(expected):
+            tokens[i] = self._scanner.get_token()
 
-            if not tokens[-1] or tokens[-1].id != i:
-                self.token_queue.append(tokens[-1])
-                return tokens, False
+            if not tokens[i] or tokens[i].id != e:
+                self._next_token = tokens[i]
+                return tokens[:i + 1], False
 
         return tokens, True
 

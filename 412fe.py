@@ -19,7 +19,7 @@ def scan(scanner: Scanner):
         if c:
             print(repr(c))
 
-        if isinstance(c, ENDFILE):
+        if c.id == ENDFILE_CAT:
             return
 
 def parse(parser: Parser, p: bool):

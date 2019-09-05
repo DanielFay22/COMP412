@@ -53,6 +53,10 @@ INTO_CAT        = categories.index('INTO')
 ENDFILE_CAT       = categories.index('ENDFILE')
 
 
+DIGITS = '0123456789'
+WHITESPACE = ' \t'
+NEWLINES = '\n\r'
+
 
 def error(msg: str, err_type: str = "Error"):
     """
