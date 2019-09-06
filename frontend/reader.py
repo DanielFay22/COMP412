@@ -6,7 +6,7 @@ class FileReader(object):
     with an internal buffer to limit overhead.
     """
 
-    bufsize = 8192*2
+    bufsize = 8192
 
     def __init__(self, fn: str):
         self.file = open(fn, "r")
@@ -26,7 +26,6 @@ class FileReader(object):
         Return the next character from the buffer, refilling the buffer if necessary.
         """
         try:
-
             self.pos += 1
             return self.buf[self.pos - 1]
 

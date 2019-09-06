@@ -12,6 +12,8 @@ class Scanner(object):
         self._fr = fr
 
         self.ln = 1
+        
+        self.read_char = self._fr.read_char
 
     def get_token(self):
         """
@@ -20,16 +22,23 @@ class Scanner(object):
         If there is an error during reading, reports the error and returns an Error token.
         """
         # map function to local variable
-        read_char = self._fr.read_char
         
         if not self.chars:
-            c = read_char()
+            c = self.read_char()
             self.chars.append(c)
         else:
             c = self.chars[-1]
 
-        if not c:  # EOF
-            return ENDFILE_CAT, None, self.ln
+        # whitespace
+        if c == ' ' or c == '\t':
+            self.chars *= 0
+            return self.get_token()
+
+        # rshift, register
+        elif c == 'r':
+            r = self._scan_r()
+
+            if r: return r
 
         # load, loadI, lshift
         elif c == 'l':
@@ -53,12 +62,6 @@ class Scanner(object):
             if self._read_remaining_token("ult"):
                 return ARITHOP_CAT, MULT_VAL, self.ln
 
-        # rshift, register
-        elif c == 'r':
-            r = self._scan_r()
-
-            if r: return r
-
         # output
         elif c == 'o':
 
@@ -75,24 +78,14 @@ class Scanner(object):
             self.chars *= 0
             return COMMA_CAT, None, self.ln
 
-        # constant
-        elif c in DIGITS:
-            return CONSTANT_CAT, self._read_constant(first_digit = int(c)), self.ln
-
         # into
         elif c == '=':
             if self._read_remaining_token('>'):
                 return INTO_CAT, None, self.ln
 
-        # newline
-        elif c in NEWLINES:
-            self.ln += 1
-            self.chars *= 0
-            return self.get_token()
-
         # comment
         elif c == '/':
-            c2 = read_char()
+            c2 = self.read_char()
             self.chars.append(c2)
 
             if c2 == '/':
@@ -104,8 +97,16 @@ class Scanner(object):
                 # return error token
                 self._lexical_error(self.chars)
 
-        # whitespace
-        elif c in WHITESPACE:
+        elif not c:  # EOF
+            return ENDFILE_CAT, None, self.ln
+
+        # constant
+        elif c in DIGITS:
+            return CONSTANT_CAT, self._read_constant(first_digit=int(c)), self.ln
+
+        # newline
+        elif c == '\n' or c == '\r':
+            self.ln += 1
             self.chars *= 0
             return self.get_token()
 
