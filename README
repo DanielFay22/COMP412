@@ -1,2 +1,19 @@
 //NAME: Daniel Fay
 //NETID: dpf2
+
+Command Syntax:
+    ./lab1_ref [flags] filename
+
+Required arguments:
+    filename  is the pathname (absolute or relative) to the input file
+
+Optional flags:
+    -h       prints message detailing command line usage
+    -s       prints tokens in token stream
+    -p       invokes parser and reports on success or failure
+    -r       prints human readable version of parser's IR
+    -P       Enables profiling.
+
+If no optional flag is provided, the default behavior is to invoke the parser
+and report success or failure. The "-s", "-p", and "-r" flags are mutually
+exclusive, if multiple are provided then the highest priority flag will be executed.
