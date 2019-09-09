@@ -111,7 +111,7 @@ class Parser(object):
             # if len(tokens)
 
     def _parse_output(self, tok):
-        tokens, t = self._load_tokens([CONSTANT_CAT])
+        tokens, t = self._load_tokens((CONSTANT_CAT,))
 
         if t:
             self._ir.add_token(tok[TOK_VAL], tokens[0][TOK_VAL], None, None)
@@ -126,7 +126,7 @@ class Parser(object):
         """
         self._ir.add_token(tok[TOK_VAL], None, None, None)
 
-    def _load_tokens(self, expected: list):
+    def _load_tokens(self, expected: tuple):
 
         tokens = [None] * len(expected)
 

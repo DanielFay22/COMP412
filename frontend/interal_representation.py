@@ -5,33 +5,14 @@ from resources import *
 
 class InternalRepresentation(object):
 
-    def __init__(self, init_size: int = 1000):
-        self._ir = [None]*15#self._gen_empty_ir(init_size)
+    def __init__(self):
+        self._ir = [None]*15
 
         self._head = self._ir
 
         self.count = 0
 
-    # @staticmethod
-    # def _gen_empty_ir(n: int = 1000) -> list:
-    #     """
-    #     Generates an empty internal representation
-    #     """
-    #     l = [[None] * 15 for _ in range(n)]
-    #
-    #     for x in range(n - 1):
-    #         l[x][-2] = l[x + 1]
-    #         l[x + 1][-1] = l[x]
-    #
-    #     return l[0]
-
-    # def _expand_ir(self) -> None:
-    #     ir = self._gen_empty_ir()
-    #
-    #     self._head[-2] = ir
-    #     ir[-1] = self._head
-
-    def add_token(self, op: int, r1: int, r2: int, r3: int) -> None:
+    def add_token(self, op, r1, r2, r3) -> None:
         """
         Enters a new operation to the current IR and increments the head.
         """
@@ -73,7 +54,7 @@ class InternalRepresentation(object):
         l = self._ir
 
         while l is not self._head:
-            s += self._gen_line_str(l)#str([instructions[l[0]]] + l[1:-2:4]) + "\n"
+            s += self._gen_line_str(l)
             l = l[-2]
 
         print(s)
