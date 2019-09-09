@@ -12,8 +12,9 @@ Optional flags:
     -s       prints tokens in token stream
     -p       invokes parser and reports on success or failure
     -r       prints human readable version of parser's IR
-    -P       Enables profiling.
+    -P       Enables profiling. Profiling results are printed in a table and saved to the file "prof.prof",
+             which can be read by an external profiling tool.
 
 If no optional flag is provided, the default behavior is to invoke the parser
-and report success or failure. The "-s", "-p", and "-r" flags are mutually
+and report success or failure (-p flag). The "-s", "-p", and "-r" flags are mutually
 exclusive, if multiple are provided then the highest priority flag will be executed.

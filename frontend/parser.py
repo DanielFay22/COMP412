@@ -26,6 +26,9 @@ class Parser(object):
 
 
     def parse(self):
+        """
+        Repeatedly retrieve tokens from the scanner and build the internal representation.
+        """
 
         while True:
             if self._next_token:
@@ -57,23 +60,32 @@ class Parser(object):
 
     def _parse_memop(self, tok):
         """
-
+        Handles parsing and error reporting for load and store operations.
         """
-        tokens, t = self._load_tokens([REGISTER_CAT, INTO_CAT, REGISTER_CAT])
+        tokens, t = self._load_tokens((REGISTER_CAT, INTO_CAT, REGISTER_CAT))
 
         if t:
             self._ir.add_token(tok[TOK_VAL], tokens[0][TOK_VAL], None, tokens[2][TOK_VAL])
 
         else:
             self.errors += 1
-            self._report_error("Encountered error parsing {0} on line {1}."
-                               .format(tok_name(tok),tok[TOK_LN]))
+
+            l = len(tokens)
+            if l == 1:
+                self._report_error("Missing source register on line {}.".format(tok[TOK_LN]))
+            elif l == 2:
+                self._report_error("Missing \"=>\" on line {}.".format(tok[TOK_LN]))
+            elif l == 3:
+                self._report_error("Missing target register on line {}.".format(tok[TOK_LN]))
+
+            else:
+                assert False
 
     def _parse_loadi(self, tok):
         """
         A loadI command must be followed by a constant, into, and then register.
         """
-        tokens, t = self._load_tokens([CONSTANT_CAT, INTO_CAT, REGISTER_CAT])
+        tokens, t = self._load_tokens((CONSTANT_CAT, INTO_CAT, REGISTER_CAT))
 
         # correct grammar, build IR
         if t:
@@ -82,11 +94,12 @@ class Parser(object):
         else:
             self.errors += 1
 
-            if len(tokens) == 1:
+            l = len(tokens)
+            if l == 1:
                 self._report_error("Missing constant in loadI in line {}.".format(tok[TOK_LN]))
-            elif len(tokens) == 2:
+            elif l == 2:
                 self._report_error("Missing \"=>\" in loadI in line {}.".format(tok[TOK_LN]))
-            elif len(tokens) == 3:
+            elif l == 3:
                 self._report_error("Missing target register in loadI in line {}.".format(tok[TOK_LN]))
             else:
                 # this should never happen
@@ -100,15 +113,27 @@ class Parser(object):
         ARITHOP REG1, REG2 => REG3
         """
 
-        tokens, t = self._load_tokens([REGISTER_CAT, COMMA_CAT, REGISTER_CAT, INTO_CAT, REGISTER_CAT])
+        tokens, t = self._load_tokens((REGISTER_CAT, COMMA_CAT, REGISTER_CAT, INTO_CAT, REGISTER_CAT))
 
         if t:
             self._ir.add_token(tok[TOK_VAL], tokens[0][TOK_VAL], tokens[2][TOK_VAL], tokens[4][TOK_VAL])
         else:
             self.errors += 1
-            self._report_error("Encountered error parsing {0} on line {1}."
-                               .format(tok_name(tok), tok[TOK_LN]))
-            # if len(tokens)
+
+            l = len(tokens)
+            if l == 1:
+                self._report_error("Missing first source register on line {}.".format(tok[TOK_LN]))
+            elif l == 2:
+                self._report_error("Missing comma on line {}.".format(tok[TOK_LN]))
+            elif l == 3:
+                self._report_error("Missing second source register on line {}.".format(tok[TOK_LN]))
+            elif l == 4:
+                self._report_error("Missing \"=>\" on line {}.".format(tok[TOK_LN]))
+            elif l == 5:
+                self._report_error("Missing target register on line {}.".format(tok[TOK_LN]))
+
+            else:
+                assert False
 
     def _parse_output(self, tok):
         tokens, t = self._load_tokens((CONSTANT_CAT,))
@@ -118,7 +143,7 @@ class Parser(object):
 
         else:
             self.errors += 1
-            self._report_error("Encountered error parsing {0} on line {1}.".format(tok_name(tok), tok[TOK_LN]))
+            self._report_error("Missing constant on line {}.".format(tok[TOK_LN]))
 
     def _parse_nop(self, tok):
         """
