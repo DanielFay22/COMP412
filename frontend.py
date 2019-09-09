@@ -13,6 +13,9 @@ ir = None
 
 
 def scan(scanner: Scanner):
+    """
+    Scan the input file and print each token to stdout.
+    """
     while True:
         c = scanner.get_token()
 
@@ -23,6 +26,10 @@ def scan(scanner: Scanner):
                 return
 
 def parse(parser: Parser, p: bool):
+    """
+    Scan and parse the input file. If p is True, then report success/failure,
+    otherwise print the internal representation.
+    """
     parser.parse()
 
     if p:
@@ -54,6 +61,15 @@ def help_handler():
           "\t-P       Enables profiling.")
 
 
+def command_line_error(msg: str):
+    """
+    Prints error message to stderr, followed by printing correct command line usage to stdout.
+    """
+    error(msg, "Command Line Error")
+    print("Correct Usage:")
+    help_handler()
+
+
 if __name__ == "__main__":
     argv = sys.argv[1:]
 
@@ -68,7 +84,7 @@ if __name__ == "__main__":
 
     # Invalid
     if not len(argv):
-        error("No command line arguments specified.")
+        command_line_error("No command line arguments specified.")
         exit(1)
     else:
         while argv:
@@ -114,7 +130,7 @@ if __name__ == "__main__":
                 if filename is None:
                     filename = arg
                 else:
-                    error("Multiple file names provided.")
+                    command_line_error("Multiple file names/unrecognized flags provided.")
                     exit(1)
 
         # default behavior
@@ -124,15 +140,17 @@ if __name__ == "__main__":
         assert not argv, "Did not process all arguments"
 
         if filename is None: # no file name provided
-            error("Must provide a valid file name.")
+            command_line_error("Must provide a valid file name.")
             exit(1)
 
     try:
         reader = FileReader(filename)
     except OSError as o:
-        error("Unable to open file with name {0}".format(filename))
+        error("Unable to open file with name {0}, no operations performed.".format(filename))
         exit(1)
 
+
+    # Initialize the profiler
     if profile:
         pr = cProfile.Profile()
         pr.enable()
@@ -148,13 +166,8 @@ if __name__ == "__main__":
 
         parse(parser, p)
 
+    # Creates profiler output
     if profile:
         pr.create_stats()
         pr.dump_stats("prof.prof")
         pr.print_stats(sort = 'tottime')
-
-
-
-
-
-
