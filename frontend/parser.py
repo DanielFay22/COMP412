@@ -1,6 +1,6 @@
 
 from .scanner import Scanner
-from .interal_representation import InternalRepresentation
+from core import InternalRepresentation
 
 from resources import *
 
@@ -24,6 +24,9 @@ class Parser(object):
     def count(self):
         return self._ir.count
 
+    @property
+    def ir(self):
+        return self._ir
 
     def parse(self):
         """
@@ -172,7 +175,6 @@ class Parser(object):
 
         """
         error(msg)
-
 
     def print_ir(self):
         self._ir.print_ir()

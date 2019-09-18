@@ -45,11 +45,11 @@ class InternalRepresentation(object):
 
         print(s)
 
-    def pprint_ir(self):
+    def to_code(self, header: str = ""):
         """
         Prints internal representation as ILOC assembly code.
         """
-        s = ""
+        s = header
 
         l = self._ir
 
@@ -64,7 +64,9 @@ class InternalRepresentation(object):
         """
         Constructs ILOC assembly code for a single operation in IR form.
         """
-        i = instructions[l[0]]
+        i = "\t"
+
+        i += instructions[l[0]]
 
         regs = l[1:-2:4]
 
@@ -73,10 +75,14 @@ class InternalRepresentation(object):
         else:
             i += '\t' + str(regs[0])
 
-        if regs[1]:
-            i += ',r' + str(regs[1])
+        if regs[1] is not None:
+            i += ', r' + str(regs[1])
+        else:
+            i += '\t'
 
-        if regs[2]:
-            i += ' => r' + str(regs[2]) + '\n'
+        if regs[2] is not None:
+            i += '\t=> r' + str(regs[2]) + '\n'
+        else:
+            i += '\n'
 
         return i

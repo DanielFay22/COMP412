@@ -4,6 +4,7 @@ import sys
 
 from resources import *
 from frontend import *
+from core import *
 
 import cProfile
 
