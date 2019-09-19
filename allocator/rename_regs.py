@@ -6,7 +6,6 @@ from resources import *
 
 
 
-
 def rename_regs(ir: InternalRepresentation):
     """
     Pass through the internal representation, renaming registers
