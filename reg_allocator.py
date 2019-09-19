@@ -18,7 +18,8 @@ def rename_registers(ir: InternalRepresentation):
 
     rename_regs(ir)
 
-    ir.to_code(header = "// --- start of renamed code\n")
+    # ir.to_code(header = "// --- start of renamed code\n")
+
 
 
 def help_handler():

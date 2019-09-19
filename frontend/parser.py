@@ -68,7 +68,10 @@ class Parser(object):
         tokens, t = self._load_tokens((REGISTER_CAT, INTO_CAT, REGISTER_CAT))
 
         if t:
-            self._ir.add_token(tok[TOK_VAL], tokens[0][TOK_VAL], None, tokens[2][TOK_VAL])
+            if tok[TOK_VAL] == STORE_VAL:
+                self._ir.add_token(tok[TOK_VAL], tokens[0][TOK_VAL], tokens[2][TOK_VAL], None)
+            else:
+                self._ir.add_token(tok[TOK_VAL], tokens[0][TOK_VAL], None, tokens[2][TOK_VAL])
 
         else:
             self.errors += 1

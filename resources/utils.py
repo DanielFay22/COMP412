@@ -59,5 +59,16 @@ NEWLINES = '\n\r'
 TOK_ID  = 0
 TOK_VAL = 1
 TOK_LN  = 2
-    
-    
+
+
+
+IR_OP       = 0
+IR_R1       = 1
+IR_VR1      = 2
+IR_R2       = 5
+IR_VR2      = 6
+IR_R3       = 9
+IR_VR3      = 10
+IR_LN       = 13
+IR_NEXT     = 14
+IR_PREV     = 15
