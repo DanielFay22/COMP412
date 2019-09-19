@@ -11,14 +11,25 @@ import cProfile
 
 
 
-def rename_registers(ir: InternalRepresentation):
+def rename_regs(ir: InternalRepresentation):
     """
     Renames registers in the ir such that each register is defined only once.
     """
-
-    rename_regs(ir)
+    rename_registers(ir)
 
     ir.to_code(header = "// --- start of renamed code\n")
+
+
+def allocate_regs(ir: InternalRepresentation, k: int):
+    """
+    Perform a register allocation with k physical registers.
+    """
+    rename_registers(ir)
+
+    allocate_registers(ir, k)
+
+    pass
+
 
 
 
@@ -141,7 +152,7 @@ if __name__ == "__main__":
         exit(1)
 
     if x:
-        rename_registers(parser.ir)
+        rename_regs(parser.ir)
 
     elif a:
         pass

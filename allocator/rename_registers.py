@@ -6,7 +6,7 @@ from resources import *
 
 
 
-def rename_regs(ir: InternalRepresentation):
+def rename_registers(ir: InternalRepresentation):
     """
     Pass through the internal representation, renaming registers
     such that each register is defined only once.
