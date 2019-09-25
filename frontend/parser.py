@@ -68,6 +68,8 @@ class Parser(object):
         tokens, t = self._load_tokens((REGISTER_CAT, INTO_CAT, REGISTER_CAT))
 
         if t:
+            self._ir.max_reg = max([self._ir.max_reg, tokens[0][TOK_VAL], tokens[2][TOK_VAL]])
+            
             if tok[TOK_VAL] == STORE_VAL:
                 self._ir.add_token(tok[TOK_VAL], tokens[0][TOK_VAL], tokens[2][TOK_VAL], None)
             else:
@@ -95,6 +97,7 @@ class Parser(object):
 
         # correct grammar, build IR
         if t:
+            self._ir.max_reg = max(self._ir.max_reg, tokens[2][TOK_VAL])
             self._ir.add_token(tok[TOK_VAL], tokens[0][TOK_VAL], None, tokens[2][TOK_VAL])
         # error, report error and continue
         else:
@@ -122,6 +125,7 @@ class Parser(object):
         tokens, t = self._load_tokens((REGISTER_CAT, COMMA_CAT, REGISTER_CAT, INTO_CAT, REGISTER_CAT))
 
         if t:
+            self._ir.max_reg = max([self._ir.max_reg, tokens[0][TOK_VAL], tokens[2][TOK_VAL], tokens[4][TOK_VAL]])
             self._ir.add_token(tok[TOK_VAL], tokens[0][TOK_VAL], tokens[2][TOK_VAL], tokens[4][TOK_VAL])
         else:
             self.errors += 1

@@ -1,8 +1,34 @@
 //NAME: Daniel Fay
 //NETID: dpf2
 
+PART 2: Register Allocator
+--------------------------------------------------------------------------------
 Command Syntax:
-    ./lab1_ref [flags] filename
+    ./412alloc [flags] filename
+
+Required arguments:
+    filename  is the pathname (absolute or relative) to the input file
+
+Optional flags:
+    -h       prints message detailing command line usage
+    -x       Outputs ILOC with registers renamed so each is defined only once
+    k        Performs regsiter allocation with k regsiters, where k is an
+             integer in the range [3,64]
+    -P       Enables profiling. Profiling results are printed in a table and
+             saved to the file "prof.prof", which can be read by an external
+             profiling tool.
+
+Either the "-x" flag or "k" must be provided (if neither is found,
+allocator will report an error and exit). The "-P" flag can be provided
+with any other flag.
+
+
+
+
+PART 1: Front End
+--------------------------------------------------------------------------------
+Command Syntax:
+    ./412fe [flags] filename
 
 Required arguments:
     filename  is the pathname (absolute or relative) to the input file

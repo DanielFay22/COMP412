@@ -45,7 +45,8 @@ def help_handler():
           "Optional flags:\n"
           "\t-h       prints this message\n"
           "\t-x       Outputs ILOC with registers renamed so each is defined only once\n"
-          "\tk        Performs regsiter allocation with k regsiters, where k is an integer in the range [3,64]\n")
+          "\tk        Performs regsiter allocation with k regsiters, where k is an integer in the range [3,64]\n"
+          "\t-P       Enables profiling.")
 
 
 def command_line_error(msg: str):
@@ -155,7 +156,9 @@ if __name__ == "__main__":
         rename_regs(parser.ir)
 
     elif a:
-        pass
+        assert isinstance(k, int), "k is not valid type."
+
+        allocate_regs(ir, k)
 
     # Creates profiler output
     if profile:

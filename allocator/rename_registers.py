@@ -13,7 +13,7 @@ def rename_registers(ir: InternalRepresentation):
     """
 
     cur_reg = 0
-    reg_map = {}
+    reg_map = [None] * ir.max_reg
 
     # Stores the location of the first and last uses of each VR.
     active = []
