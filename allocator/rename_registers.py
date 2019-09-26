@@ -22,7 +22,7 @@ def rename_registers(ir: InternalRepresentation):
         # Check register def
         if op[IR_R3] is not None:
             if sr_to_vr[op[IR_R3]] is None:
-                sr_to_vr[op[IR_VR3]] = cur_reg
+                sr_to_vr[op[IR_R3]] = cur_reg
                 cur_reg += 1
 
             op[IR_VR3] = sr_to_vr[op[IR_R3]]

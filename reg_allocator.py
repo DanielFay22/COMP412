@@ -84,7 +84,6 @@ if __name__ == "__main__":
 
             elif arg == "-x":
 
-
                 if a:
                     error("Input should contain only one command line flag. "
                           "Defaulting to highest priority flag.")
@@ -133,6 +132,8 @@ if __name__ == "__main__":
     except OSError as o:
         error("Unable to open file with name {0}, no operations performed.".format(filename))
         exit(1)
+
+    assert reader is not None, "Invalid reader object"
 
 
     # Initialize the profiler
