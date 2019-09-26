@@ -6,50 +6,43 @@ from resources import *
 class InternalRepresentation(object):
 
     def __init__(self):
-        self._ir: list = [None] * 16
-        self._ir[IR_LN] = 0
-
-        self._head = self._ir
+        self._ir: list = []
 
         self.count = 0
 
         self.max_reg = 0
         self.active = None
+        self.index = 0
 
     @property
     def ir(self):
         return self._ir
 
-    @property
-    def head(self):
-        return self._head
+    # @property
+    # def head(self):
+    #     return self._head
 
     def add_token(self, op, r1, r2, r3) -> None:
         """
         Enters a new operation to the current IR and increments the head.
         """
         l = [None] * 16
-        l[IR_PREV] = self._head
-        self._head[IR_NEXT] = l
-        l[IR_LN] = self._head[IR_LN] + 1
 
-        self._head[0] = op
-        self._head[1] = r1
-        self._head[5] = r2
-        self._head[9] = r3
+        l[IR_OP] = op
+        l[IR_R1] = r1
+        l[IR_R2] = r2
+        l[IR_R3] = r3
 
-        self._head = l
-
+        l[IR_LN] = self.count
         self.count += 1
+
+        self._ir.append(l)
 
     def print_ir(self):
         s = ""
 
-        l = self._ir
-
-        while l is not self._head:
+        for l in self._ir:
             s += str([instructions[l[0]]] + l[1:-2:4]) + "\n"
-            l = l[-2]
 
         print(s)
 
@@ -59,11 +52,8 @@ class InternalRepresentation(object):
         """
         s = header
 
-        l = self._ir
-
-        while l is not self._head:
+        for l in self._ir:
             s += self._gen_line_str(l)
-            l = l[-2]
 
         print(s)
 

@@ -13,55 +13,60 @@ def rename_registers(ir: InternalRepresentation):
     """
 
     cur_reg = 0
-    reg_map = [None] * ir.max_reg
+    sr_to_vr = [None] * (ir.max_reg + 1)
+    # print(ir.max_reg)
+    lu = sr_to_vr[:]
 
     # Stores the location of the first and last uses of each VR.
     active = []
 
-    op = ir.head
-
-    while op:
+    for i in range(len(ir.ir) - 1, -1, -1):
+        op = ir.ir[i]
 
         # Check register def
         if op[IR_R3] is not None:
-            try:
-                op[IR_VR3] = reg_map[op[IR_R3]]
-                active[op[IR_VR3]][0] = op[IR_LN]
-
-                reg_map.pop(op[IR_R3])
-
-            except KeyError:
-                reg_map[op[IR_R3]] = cur_reg
-                op[IR_VR3] = cur_reg
-
+            if sr_to_vr[op[IR_R3]] is None:
+                sr_to_vr[op[IR_VR3]] = cur_reg
                 cur_reg += 1
-                active.append([op[IR_LN], op[IR_LN]])
+
+            op[IR_VR3] = sr_to_vr[op[IR_R3]]
+            op[IR_NU3] = lu[op[IR_R3]]
+
+            sr_to_vr[op[IR_R3]] = None
+            lu[op[IR_R3]] = None
 
         # Check register uses
         if op[IR_R1] is not None:
             if not (op[IR_OP] == LOADI_VAL or op[IR_OP] == OUTPUT_VAL):
-                try:
-                    op[IR_VR1] = reg_map[op[IR_R1]]
-                except KeyError:
-                    reg_map[op[IR_R1]] = cur_reg
-                    op[IR_VR1] = cur_reg
-
+                if sr_to_vr[op[IR_R1]] is None:
+                    sr_to_vr[op[IR_R1]] = cur_reg
                     cur_reg += 1
-                    active.append([0, op[IR_LN]])
 
+                op[IR_VR1] = sr_to_vr[op[IR_R1]]
+                op[IR_NU1] = lu[op[IR_R1]]
+                lu[op[IR_R1]] = op[IR_LN]
 
         if op[IR_R2] is not None:
-            try:
-                op[IR_VR2] = reg_map[op[IR_R2]]
-            except KeyError:
-                reg_map[op[IR_R2]] = cur_reg
-                op[IR_VR2] = cur_reg
 
+            if sr_to_vr[op[IR_R2]] is None:
+                sr_to_vr[op[IR_R2]] = cur_reg
                 cur_reg += 1
-                active.append([0, op[IR_LN]])
+
+            op[IR_VR2] = sr_to_vr[op[IR_R2]]
+            op[IR_NU2] = lu[op[IR_R2]]
+            lu[op[IR_R2]] = op[IR_LN]
+
+            # try:
+            #     op[IR_VR2] = sr_to_vr[op[IR_R2]]
+            # except KeyError:
+            #     sr_to_vr[op[IR_R2]] = cur_reg
+            #     op[IR_VR2] = cur_reg
+            #
+            #     cur_reg += 1
+            #     active.append([0, op[IR_LN]])
 
         # Get next operation
-        op = op[IR_PREV]
+        # op = op[IR_PREV]
 
     ir.max_reg = cur_reg - 1
-    ir.active = active
+    # ir.active = active
