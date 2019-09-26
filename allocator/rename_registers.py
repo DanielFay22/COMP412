@@ -14,11 +14,7 @@ def rename_registers(ir: InternalRepresentation):
 
     cur_reg = 0
     sr_to_vr = [None] * (ir.max_reg + 1)
-    # print(ir.max_reg)
     lu = sr_to_vr[:]
-
-    # Stores the location of the first and last uses of each VR.
-    active = []
 
     for i in range(len(ir.ir) - 1, -1, -1):
         op = ir.ir[i]

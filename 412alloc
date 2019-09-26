@@ -1,0 +1,2 @@
+#!/bin/bash
+python3 -q reg_allocator.py $@
