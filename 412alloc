@@ -1,2 +1,2 @@
 #!/bin/bash
-python3 -q reg_allocator.py $@ || sed 1d
+python3 -q ~/comp412/COMP412-FE/reg_allocator.py $@ || sed 1d

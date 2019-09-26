@@ -70,21 +70,21 @@ class InternalRepresentation(object):
         vregs = l[2:-2:4]
 
         if not (l[0] == LOADI_VAL or l[0] == OUTPUT_VAL):
-            i += '\tvr' + str(vregs[0])
+            i += '\tr' + str(vregs[0])
         else:
             i += '\t' + str(regs[0])
 
         if l[0] != STORE_VAL:
             if regs[1] is not None:
-                i += ', vr' + str(vregs[1])
+                i += ', r' + str(vregs[1])
             else:
                 i += '\t'
 
             if regs[2] is not None:
-                i += '\t=> vr' + str(vregs[2]) + '\n'
+                i += '\t=> r' + str(vregs[2]) + '\n'
             else:
                 i += '\n'
         else:
-            i += '\t\t=> vr' + str(vregs[1]) + '\n'
+            i += '\t\t=> r' + str(vregs[1]) + '\n'
 
         return i

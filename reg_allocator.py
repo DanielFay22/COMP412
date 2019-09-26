@@ -17,7 +17,7 @@ def rename_regs(ir: InternalRepresentation):
     """
     rename_registers(ir)
 
-    ir.to_code(header = "// --- start of renamed code\n")
+    ir.to_code(header = "// Filler comment\n// --- start of renamed code\n")
 
 
 def allocate_regs(ir: InternalRepresentation, k: int):
