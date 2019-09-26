@@ -18,10 +18,6 @@ class InternalRepresentation(object):
     def ir(self):
         return self._ir
 
-    # @property
-    # def head(self):
-    #     return self._head
-
     def add_token(self, op, r1, r2, r3) -> None:
         """
         Enters a new operation to the current IR and increments the head.
@@ -53,7 +49,7 @@ class InternalRepresentation(object):
         s = header
 
         for l in self._ir:
-            s += self._gen_line_str(l)
+            s += self._gen_line_str_v(l)
 
         print(s)
 
@@ -65,6 +61,40 @@ class InternalRepresentation(object):
         i = "\t"
 
         i += instructions[l[0]]
+
+        regs = l[1:-2:4]
+
+        if not (l[0] == LOADI_VAL or l[0] == OUTPUT_VAL):
+            i += '\tr' + str(regs[0])
+        else:
+            i += '\t' + str(regs[0])
+
+        if l[0] != STORE_VAL:
+            if regs[1] is not None:
+                i += ', r' + str(regs[1])
+            else:
+                i += '\t'
+
+            if regs[2] is not None:
+                i += '\t=> r' + str(regs[2]) + '\n'
+            else:
+                i += '\n'
+        else:
+            i += '\t\t=> r' + str(regs[1]) + '\n'
+
+        return i
+
+    @staticmethod
+    def _gen_line_str_v(l):
+        """
+        Constructs ILOC assembly code for a single operation in IR form.
+        """
+        i = "\t"
+
+        i += instructions[l[0]]
+
+        if l[0] == NOP_VAL:
+            return i + '\n'
 
         regs = l[1:-2:4]
         vregs = l[2:-2:4]
