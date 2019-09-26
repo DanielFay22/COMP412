@@ -6,7 +6,7 @@ from resources import *
 class InternalRepresentation(object):
 
     def __init__(self):
-        self._ir: list = []
+        self._ir = []
 
         self.count = 0
 
