@@ -52,17 +52,17 @@ class Allocator(object):
                     op[IR_PR1] = vr_to_pr[vr1]
                 else:
                     # Retrieve spilled value
+                    self.reserved_vr = vr2
                     p = self.unspill(vr1)
                     op[IR_PR1] = p
-                    self.reserved_vr = vr1
 
             if vr2 is not None:
                 if vr_to_pr[vr2] is not None:
                     op[IR_PR2] = vr_to_pr[vr2]
                 else:
                     # Retrieve spilled value
+                    self.reserved_vr = vr1
                     p = self.unspill(vr2)
-
                     op[IR_PR2] = p
 
             self.reserved_vr = None
@@ -133,7 +133,7 @@ class Allocator(object):
             return pr
 
         pr = self.pr_to_vr.index(
-            max(self.pr_to_vr, key=lambda v: self.vr_nu[v])
+            max(self.pr_to_vr, key=lambda v: self.vr_nu[v] * int(v == self.reserved_vr))
         )
 
         if not self.open_addr:

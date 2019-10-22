@@ -32,6 +32,16 @@ def rename_registers(ir: InternalRepresentation):
             lu[op[IR_R3]] = None
 
         # Check register uses
+        if op[IR_R2] is not None:
+
+            if sr_to_vr[op[IR_R2]] is None:
+                sr_to_vr[op[IR_R2]] = cur_reg
+                cur_reg += 1
+
+            op[IR_VR2] = sr_to_vr[op[IR_R2]]
+            op[IR_NU2] = lu[op[IR_R2]]
+            lu[op[IR_R2]] = op[IR_LN]
+
         if op[IR_R1] is not None:
             if not (op[IR_OP] == LOADI_VAL or op[IR_OP] == OUTPUT_VAL):
                 if sr_to_vr[op[IR_R1]] is None:
@@ -42,15 +52,7 @@ def rename_registers(ir: InternalRepresentation):
                 op[IR_NU1] = lu[op[IR_R1]]
                 lu[op[IR_R1]] = op[IR_LN]
 
-        if op[IR_R2] is not None:
 
-            if sr_to_vr[op[IR_R2]] is None:
-                sr_to_vr[op[IR_R2]] = cur_reg
-                cur_reg += 1
-
-            op[IR_VR2] = sr_to_vr[op[IR_R2]]
-            op[IR_NU2] = lu[op[IR_R2]]
-            lu[op[IR_R2]] = op[IR_LN]
 
 
     ir.max_reg = cur_reg - 1

@@ -209,7 +209,7 @@ class InternalRepresentation(object):
                 c += ', vr' + str(vregs[1])
             else:
                 i += '\t'
-                c += '\t'
+                c += ''
 
             if regs[2] is not None:
                 i += '\t=> r' + str(pregs[2])
