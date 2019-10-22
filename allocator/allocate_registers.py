@@ -27,6 +27,8 @@ class Allocator(object):
         self.mem_loc = 32772
         self.open_addr = []
 
+        self.reserved_vr = None
+
 
     def allocate_registers(self):
         """
@@ -41,6 +43,10 @@ class Allocator(object):
             vr2 = op[IR_VR2]
             vr3 = op[IR_VR3]
 
+            # Unused declaration.
+            if vr3 is not None and op[IR_NU3] is None:
+                continue
+
             if vr1 is not None:
                 if vr_to_pr[vr1] is not None:
                     op[IR_PR1] = vr_to_pr[vr1]
@@ -48,6 +54,7 @@ class Allocator(object):
                     # Retrieve spilled value
                     p = self.unspill(vr1)
                     op[IR_PR1] = p
+                    self.reserved_vr = vr1
 
             if vr2 is not None:
                 if vr_to_pr[vr2] is not None:
@@ -57,6 +64,8 @@ class Allocator(object):
                     p = self.unspill(vr2)
 
                     op[IR_PR2] = p
+
+            self.reserved_vr = None
 
             if vr3 is not None:
 
@@ -77,10 +86,7 @@ class Allocator(object):
                 else:
                     self.clear_vr(vr2)
             if vr3 is not None:
-                if op[IR_NU3] is not None:
-                    vr_nu[vr3] = op[IR_NU3]
-                else:
-                    self.clear_vr(vr3)
+                vr_nu[vr3] = op[IR_NU3]
 
 
             self.new_ir.add_token_copy(op)
@@ -112,8 +118,9 @@ class Allocator(object):
         """
 
         """
-        # If some value
-        clean_vrs = [vr for vr in self.pr_to_vr if vr is not None and self.vr_spill[vr] is not None]
+        # If some value is already stored somewhere, you don't need to store it again.
+        clean_vrs = [vr for vr in self.pr_to_vr if self.vr_spill[vr] is not None
+                     and vr != self.reserved_vr]
         if clean_vrs:
             vr = max(clean_vrs, key=lambda v: self.vr_nu[v])
             pr = self.vr_to_pr[vr]
@@ -137,7 +144,7 @@ class Allocator(object):
 
         self.new_ir.add_full_token(
             op=LOADI_VAL,
-            r1=m, vr1=m, pr1=m,
+            r1=-2, vr1=vr, pr1=m,
             r3=self.ir.max_reg + 1, vr3=self.ir.max_reg + 1, pr3=self.spill_reg
         )
 
@@ -162,13 +169,13 @@ class Allocator(object):
         # Get address of spilled value
         self.new_ir.add_full_token(
             op=LOADI_VAL,
-            r1=self.vr_spill[vr], vr1=self.vr_spill[vr], pr1=self.vr_spill[vr],
+            r1=-1, vr1=vr, pr1=self.vr_spill[vr],
             r3=self.spill_reg, vr3=self.ir.max_reg + 1, pr3=self.spill_reg
         )
 
         self.new_ir.add_full_token(
             op=LOAD_VAL,
-            r1=self.ir.max_reg + 1, vr1=self.ir.max_reg + 1, pr1=self.spill_reg,
+            r1=self.ir.max_reg + 1, vr1=vr, pr1=self.spill_reg,
             r3=self.ir.max_reg + 1, vr3=self.ir.max_reg + 1, pr3=pr
         )
 

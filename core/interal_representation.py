@@ -170,31 +170,52 @@ class InternalRepresentation(object):
         Constructs ILOC assembly code for a single operation in IR form.
         """
         i = "\t"
+        c = ""
+        c1 = ""
 
-        i += instructions[l[0]]
+        i += instructions[l[0]] + ' '
 
         if l[0] == NOP_VAL:
             return i + '\n'
 
         regs = l[1:-2:4]
+        vregs = l[2:-2:4]
         pregs = l[3:-2:4]
 
         if not (l[0] == LOADI_VAL or l[0] == OUTPUT_VAL):
             i += '\tr' + str(pregs[0])
+            c += 'vr' + str(vregs[0])
         else:
-            i += '\t' + str(regs[0])
+            if regs[0] == -1:
+                c1 = "Restoring vr{} from addr {}".format(vregs[0], pregs[0])
+                i += '\t' + str(pregs[0])
+            elif regs[0] == -2:
+                c1 = "Spilling vr{} to addr {}".format(vregs[0], pregs[0])
+                i += '\t' + str(pregs[0])
+            else:
+                i += '\t' + str(regs[0])
+                c += str(regs[0]) + '\t'
 
         if l[0] != STORE_VAL:
             if regs[1] is not None:
                 i += ', r' + str(pregs[1])
+                c += ', vr' + str(vregs[1])
             else:
                 i += '\t'
+                c += '\t'
 
             if regs[2] is not None:
-                i += '\t=> r' + str(pregs[2]) + '\n'
-            else:
-                i += '\n'
-        else:
-            i += '\t\t=> r' + str(pregs[1]) + '\n'
+                i += '\t=> r' + str(pregs[2])
+                c += '\t=> vr' + str(vregs[2])
 
-        return i
+        else:
+            i += '\t\t=> r' + str(pregs[1])
+            c += '\t\t=> vr' + str(vregs[1])
+
+
+        if c1:
+            i += "\t\t//\t" + c1
+        else:
+            i += '\t\t//\t' + c
+
+        return i + '\n'
