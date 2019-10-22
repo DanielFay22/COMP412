@@ -77,3 +77,7 @@ IR_PR3      = 11
 IR_NU3      = 12
 IR_LN       = 13
 IR_IND      = 14
+
+
+CONSTANT =  0
+VALUE =     1

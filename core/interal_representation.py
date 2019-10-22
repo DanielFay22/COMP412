@@ -34,6 +34,38 @@ class InternalRepresentation(object):
 
         self._ir.append(l)
 
+    def add_full_token(self, op,
+                       r1=None, vr1=None, pr1=None, nu1=None,
+                       r2=None, vr2=None, pr2=None, nu2=None,
+                       r3=None, vr3=None, pr3=None, nu3=None):
+        """
+
+        """
+        l = [None] * 16
+
+        l[IR_OP] = op
+
+        l[IR_R1] = r1
+        l[IR_VR1] = vr1
+        l[IR_PR1] = pr1
+        l[IR_NU1] = nu1
+
+        l[IR_R2] = r2
+        l[IR_VR2] = vr2
+        l[IR_PR2] = pr2
+        l[IR_NU2] = nu2
+
+        l[IR_R3] = r3
+        l[IR_VR3] = vr3
+        l[IR_PR3] = pr3
+        l[IR_NU3] = nu3
+
+        l[IR_LN] = self.count
+        self.count += 1
+
+        self._ir.append(l)
+
+
     def print_ir(self):
         s = ""
 
