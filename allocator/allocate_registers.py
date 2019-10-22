@@ -44,8 +44,8 @@ class Allocator(object):
             vr3 = op[IR_VR3]
 
             # Unused declaration.
-            if vr3 is not None and op[IR_NU3] is None:
-                continue
+            # if vr3 is not None and op[IR_NU3] is None:
+            #     continue
 
             if vr1 is not None:
                 if vr_to_pr[vr1] is not None:
@@ -67,6 +67,7 @@ class Allocator(object):
 
             self.reserved_vr = None
 
+            # vr3 corresponds to new declaration, so always needs new pr
             if vr3 is not None:
 
                 p = self.get_pr()
