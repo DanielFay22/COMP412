@@ -19,7 +19,7 @@ class Allocator(object):
         self.vr_to_pr   = [None] * (self.ir.max_reg + 1)
         self.vr_spill   = self.vr_to_pr[:]
         self.vr_nu      = self.vr_spill[:]
-        self.pr_nu = self.pr_to_vr[:]
+        self.pr_nu      = self.pr_to_vr[:]
 
         self.new_ir = InternalRepresentation()
 
@@ -67,17 +67,17 @@ class Allocator(object):
 
 
             if vr1 is not None:
-                if op[IR_NU1]:
+                if op[IR_NU1] is not None:
                     vr_nu[vr1] = op[IR_NU1]
                 else:
                     self.clear_vr(vr1)
             if vr2 is not None:
-                if op[IR_NU2]:
+                if op[IR_NU2] is not None:
                     vr_nu[vr2] = op[IR_VR2]
                 else:
                     self.clear_vr(vr2)
             if vr3 is not None:
-                if op[IR_NU3]:
+                if op[IR_NU3] is not None:
                     vr_nu[vr3] = op[IR_NU3]
                 else:
                     self.clear_vr(vr3)
@@ -122,9 +122,9 @@ class Allocator(object):
             return pr
 
         mu, nu = 0, -1
-        for i, n in enumerate(self.pr_nu):
-            if n is not None and  n > nu:
-                mu, nu = i, n
+        for p, v in enumerate(self.pr_to_vr):
+            if self.vr_nu[v] is None or self.vr_nu[v] > nu:
+                mu, nu = p, self.vr_nu[v]
         pr = mu
 
         if not self.open_addr:
