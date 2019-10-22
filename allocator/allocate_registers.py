@@ -125,11 +125,11 @@ class Allocator(object):
         for i, n in enumerate(self.pr_nu):
             if n is not None and  n > nu:
                 mu, nu = i, n
-        pr = mu#self.pr_nu.index(max(self.pr_nu))
+        pr = mu
 
         if not self.open_addr:
             m = self.mem_loc
-            self.mem_loc += 1
+            self.mem_loc += 4
 
         else:
             m = self.open_addr.pop()
