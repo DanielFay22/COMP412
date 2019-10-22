@@ -133,7 +133,7 @@ class Allocator(object):
             return pr
 
         pr = self.pr_to_vr.index(
-            max(self.pr_to_vr, key=lambda v: self.vr_nu[v] * int(v == self.reserved_vr))
+            max(self.pr_to_vr, key=lambda v: self.vr_nu[v] * int(v != self.reserved_vr))
         )
 
         if not self.open_addr:
