@@ -31,7 +31,7 @@ def allocate_regs(ir: InternalRepresentation, k: int):
 
     new_ir = a.new_ir
 
-    print(new_ir.to_code())
+    new_ir.to_code(header = "// Filler comment\n// --- start of renamed code\n")
 
 
 def help_handler():
