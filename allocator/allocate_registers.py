@@ -121,11 +121,13 @@ class Allocator(object):
             self.pr_to_vr[pr] = None
             return pr
 
-        mu, nu = 0, -1
-        for p, v in enumerate(self.pr_to_vr):
-            if self.vr_nu[v] is None or self.vr_nu[v] > nu:
-                mu, nu = p, self.vr_nu[v]
-        pr = mu
+        # mu, nu = 0, -1
+        # for p, v in enumerate(self.pr_to_vr):
+        #     if self.vr_nu[v] is None or self.vr_nu[v] > nu:
+        #         mu, nu = p, self.vr_nu[v]
+        pr = self.pr_to_vr.index(
+            max(self.pr_to_vr, key=lambda v: self.vr_nu[v] if self.vr_nu[v] is not None else 2 ** 32)
+        )
 
         if not self.open_addr:
             m = self.mem_loc
