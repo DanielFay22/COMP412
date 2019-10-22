@@ -89,7 +89,7 @@ class Allocator(object):
 
         p = self.vr_to_pr[vr]
 
-        if p:
+        if p is not None:
             self.pr_to_vr[p] = None
             self.vr_to_pr[vr] = None
             if self.vr_spill[vr]:
@@ -121,12 +121,8 @@ class Allocator(object):
             self.pr_to_vr[pr] = None
             return pr
 
-        # mu, nu = 0, -1
-        # for p, v in enumerate(self.pr_to_vr):
-        #     if self.vr_nu[v] is None or self.vr_nu[v] > nu:
-        #         mu, nu = p, self.vr_nu[v]
         pr = self.pr_to_vr.index(
-            max(self.pr_to_vr, key=lambda v: self.vr_nu[v] if self.vr_nu[v] is not None else 2 ** 32)
+            max(self.pr_to_vr, key=lambda v: self.vr_nu[v])
         )
 
         if not self.open_addr:
