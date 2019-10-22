@@ -184,10 +184,11 @@ class InternalRepresentation(object):
 
         if not (l[0] == LOADI_VAL or l[0] == OUTPUT_VAL):
             if l[0] == LOAD_VAL:
-                i += '\tMem[r' + str(pregs[0]) + ']'
+                c += 'Mem[vr' + str(vregs[0]) + ']'
             else:
-                i += '\tr' + str(pregs[0])
-            c += 'vr' + str(vregs[0])
+                c += 'vr' + str(vregs[0])
+            i += '\tr' + str(pregs[0])
+
         else:
             if regs[0] == -1:
                 c1 = "Restoring vr{} from addr {}".format(vregs[0], pregs[0])
