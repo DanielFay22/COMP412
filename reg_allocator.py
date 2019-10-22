@@ -26,11 +26,12 @@ def allocate_regs(ir: InternalRepresentation, k: int):
     """
     rename_registers(ir)
 
-    allocate_registers(ir, k)
+    a = Allocator(ir, k)
+    a.allocate_registers()
 
-    pass
+    new_ir = a.new_ir
 
-
+    print(new_ir.to_code())
 
 
 def help_handler():

@@ -213,7 +213,7 @@ class Scanner(object):
         s = first_digit
         c = self._fr.read_char()
 
-        while c in DIGITS:
+        while c is not None and c in DIGITS:
             s = s * 10 + int(c)
             c = self._fr.read_char()
 

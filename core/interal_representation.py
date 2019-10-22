@@ -65,6 +65,19 @@ class InternalRepresentation(object):
 
         self._ir.append(l)
 
+    def add_token_copy(self, tok):
+        """
+
+        """
+        assert len(tok) == 16
+
+        tok[IR_LN] = self.count
+        self.count += 1
+
+        self._ir.append(tok[:])
+
+
+
 
     def print_ir(self):
         s = ""
@@ -81,7 +94,7 @@ class InternalRepresentation(object):
         s = header
 
         for l in self._ir:
-            s += self._gen_line_str_v(l)
+            s += self._gen_line_str_p(l)
 
         print(s)
 
@@ -148,5 +161,40 @@ class InternalRepresentation(object):
                 i += '\n'
         else:
             i += '\t\t=> r' + str(vregs[1]) + '\n'
+
+        return i
+
+    @staticmethod
+    def _gen_line_str_p(l):
+        """
+        Constructs ILOC assembly code for a single operation in IR form.
+        """
+        i = "\t"
+
+        i += instructions[l[0]]
+
+        if l[0] == NOP_VAL:
+            return i + '\n'
+
+        regs = l[1:-2:4]
+        pregs = l[3:-2:4]
+
+        if not (l[0] == LOADI_VAL or l[0] == OUTPUT_VAL):
+            i += '\tr' + str(pregs[0])
+        else:
+            i += '\t' + str(regs[0])
+
+        if l[0] != STORE_VAL:
+            if regs[1] is not None:
+                i += ', r' + str(pregs[1])
+            else:
+                i += '\t'
+
+            if regs[2] is not None:
+                i += '\t=> r' + str(pregs[2]) + '\n'
+            else:
+                i += '\n'
+        else:
+            i += '\t\t=> r' + str(pregs[1]) + '\n'
 
         return i
