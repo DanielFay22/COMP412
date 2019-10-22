@@ -44,8 +44,8 @@ class Allocator(object):
             vr3 = op[IR_VR3]
 
             # Unused declaration.
-            # if vr3 is not None and op[IR_NU3] is None:
-            #     continue
+            if vr3 is not None and op[IR_NU3] is None:
+                continue
 
             if vr1 is not None:
                 if vr_to_pr[vr1] is not None:
@@ -83,7 +83,7 @@ class Allocator(object):
                     self.clear_vr(vr1)
             if vr2 is not None:
                 if op[IR_NU2] is not None:
-                    vr_nu[vr2] = op[IR_VR2]
+                    vr_nu[vr2] = op[IR_NU2]
                 else:
                     self.clear_vr(vr2)
             if vr3 is not None:
