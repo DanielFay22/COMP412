@@ -64,5 +64,5 @@ def rename_registers(ir: InternalRepresentation):
                 "Register \"r{}\" is used before it is defined on line {}.".format(
                     i, j
                 ),
-                "Undefined Register"
+                "// Undefined Register"
             )
