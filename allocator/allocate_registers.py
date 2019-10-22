@@ -71,7 +71,6 @@ class Allocator(object):
                     vr_nu[vr1] = op[IR_NU1]
                 else:
                     self.clear_vr(vr1)
-
             if vr2 is not None:
                 if op[IR_NU2]:
                     vr_nu[vr2] = op[IR_VR2]
@@ -122,8 +121,11 @@ class Allocator(object):
             self.pr_to_vr[pr] = None
             return pr
 
-
-        pr = self.pr_nu.index(max(self.pr_nu))
+        mu, nu = 0, -1
+        for i, n in enumerate(self.pr_nu):
+            if n is not None and  n > nu:
+                mu, nu = i, n
+        pr = mu#self.pr_nu.index(max(self.pr_nu))
 
         if not self.open_addr:
             m = self.mem_loc
@@ -168,7 +170,7 @@ class Allocator(object):
 
         self.new_ir.add_full_token(
             op=LOAD_VAL,
-            r1=self.ir.max_reg + 1, vr1=self.ir.max_reg + 1, pr1=self.vr_spill,
+            r1=self.ir.max_reg + 1, vr1=self.ir.max_reg + 1, pr1=self.spill_reg,
             r3=self.ir.max_reg + 1, vr3=self.ir.max_reg + 1, pr3=pr
         )
 
