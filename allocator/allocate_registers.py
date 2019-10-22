@@ -171,17 +171,27 @@ class Allocator(object):
         pr = self.get_pr()
 
         # Get address of spilled value
-        self.new_ir.add_full_token(
-            op=LOADI_VAL,
-            r1=-1, vr1=vr, pr1=self.vr_spill[vr],
-            r3=self.spill_reg, vr3=self.ir.max_reg + 1, pr3=self.spill_reg
-        )
+        if self.vr_spill[vr] is not None:
 
-        self.new_ir.add_full_token(
-            op=LOAD_VAL,
-            r1=self.ir.max_reg + 1, vr1=vr, pr1=self.spill_reg,
-            r3=self.ir.max_reg + 1, vr3=self.ir.max_reg + 1, pr3=pr
-        )
+            self.new_ir.add_full_token(
+                op=LOADI_VAL,
+                r1=-1, vr1=vr, pr1=self.vr_spill[vr],
+                r3=self.spill_reg, vr3=self.ir.max_reg + 1, pr3=self.spill_reg
+            )
+
+            self.new_ir.add_full_token(
+                op=LOAD_VAL,
+                r1=self.ir.max_reg + 1, vr1=vr, pr1=self.spill_reg,
+                r3=self.ir.max_reg + 1, vr3=self.ir.max_reg + 1, pr3=pr
+            )
+
+        else:
+
+            self.new_ir.add_full_token(
+                op=LOADI_VAL,
+                r1=-3, vr1=vr, pr1=0,
+                r3=self.ir.max_reg + 1, vr3=self.ir.max_reg + 1, pr3=pr
+            )
 
         self.assign_pr(vr, pr)
 

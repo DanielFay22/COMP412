@@ -183,7 +183,10 @@ class InternalRepresentation(object):
         pregs = l[3:-2:4]
 
         if not (l[0] == LOADI_VAL or l[0] == OUTPUT_VAL):
-            i += '\tr' + str(pregs[0])
+            if l[0] == LOAD_VAL:
+                i += '\tMem[r' + str(pregs[0]) + ']'
+            else:
+                i += '\tr' + str(pregs[0])
             c += 'vr' + str(vregs[0])
         else:
             if regs[0] == -1:
@@ -191,6 +194,9 @@ class InternalRepresentation(object):
                 i += '\t' + str(pregs[0])
             elif regs[0] == -2:
                 c1 = "Spilling vr{} to addr {}".format(vregs[0], pregs[0])
+                i += '\t' + str(pregs[0])
+            elif regs[0] == -3:
+                c1 = "Rematerializing vr{} into pr{}".format(vregs[0], pregs[2])
                 i += '\t' + str(pregs[0])
             else:
                 i += '\t' + str(regs[0])
@@ -210,7 +216,7 @@ class InternalRepresentation(object):
 
         else:
             i += '\t\t=> r' + str(pregs[1])
-            c += '\t\t=> vr' + str(vregs[1])
+            c += '\t\t=> Mem[vr' + str(vregs[1]) + ']'
 
 
         if c1:

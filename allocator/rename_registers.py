@@ -52,17 +52,15 @@ def rename_registers(ir: InternalRepresentation):
             op[IR_NU2] = lu[op[IR_R2]]
             lu[op[IR_R2]] = op[IR_LN]
 
-            # try:
-            #     op[IR_VR2] = sr_to_vr[op[IR_R2]]
-            # except KeyError:
-            #     sr_to_vr[op[IR_R2]] = cur_reg
-            #     op[IR_VR2] = cur_reg
-            #
-            #     cur_reg += 1
-            #     active.append([0, op[IR_LN]])
-
-        # Get next operation
-        # op = op[IR_PREV]
 
     ir.max_reg = cur_reg - 1
-    # ir.active = active
+
+    undefined = [(i, j) for i, j in enumerate(lu) if j is not None]
+    if undefined:
+        for i, j in sorted(undefined, key=lambda x: x[1]):
+            error(
+                "Register \"r{}\" is used before it is defined on line {}.".format(
+                    i, j
+                ),
+                "Undefined Register"
+            )
