@@ -87,7 +87,10 @@ class Allocator(object):
                 else:
                     self.clear_vr(vr2)
             if vr3 is not None:
-                vr_nu[vr3] = op[IR_NU3]
+                if op[IR_NU3] is not None:
+                    vr_nu[vr3] = op[IR_NU3]
+                else:
+                    self.clear_vr(vr3)
 
 
             self.new_ir.add_token_copy(op)
