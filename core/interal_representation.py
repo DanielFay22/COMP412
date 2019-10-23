@@ -22,7 +22,7 @@ class InternalRepresentation(object):
         """
         Enters a new operation to the current IR and increments the head.
         """
-        l = [None] * 16
+        l = [None] * 14
 
         l[IR_OP] = op
         l[IR_R1] = r1
@@ -41,7 +41,7 @@ class InternalRepresentation(object):
         """
 
         """
-        l = [None] * 16
+        l = [None] * 14
 
         l[IR_OP] = op
 
@@ -69,15 +69,14 @@ class InternalRepresentation(object):
         """
 
         """
-        assert len(tok) == 16
+        assert len(tok) == 14
 
-        tok[IR_LN] = self.count
+        new_tok = tok[:]
+
+        new_tok[IR_LN] = self.count
         self.count += 1
 
-        self._ir.append(tok[:])
-
-
-
+        self._ir.append(new_tok)
 
     def print_ir(self):
         s = ""
@@ -191,13 +190,13 @@ class InternalRepresentation(object):
 
         else:
             if regs[0] == -1:
-                c1 = "Restoring vr{} from addr {}".format(vregs[0], pregs[0])
+                c1 = "Restoring vr" + str(vregs[0]) + " from addr " + str(pregs[0])
                 i += '\t' + str(pregs[0])
             elif regs[0] == -2:
-                c1 = "Spilling vr{} to addr {}".format(vregs[0], pregs[0])
+                c1 = "Spilling vr" + str(vregs[0]) + " to addr " + str(pregs[0])
                 i += '\t' + str(pregs[0])
             elif regs[0] == -3:
-                c1 = "Rematerializing vr{} into pr{}".format(vregs[0], pregs[2])
+                c1 = "Rematerializing vr" + str(vregs[0]) + " into pr" + str(pregs[2])
                 i += '\t' + str(pregs[0])
             else:
                 i += '\t' + str(regs[0])
