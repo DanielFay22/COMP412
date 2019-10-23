@@ -123,8 +123,15 @@ class Allocator(object):
 
         """
         # If some value is already stored somewhere, you don't need to store it again.
-        clean_vrs = [vr for vr in self.pr_to_vr if self.vr_spill[vr] is not None
-                     and vr != self.reserved_vr]
+        for p, vr in enumerate(self.pr_to_vr):
+            if self.vr_nu[vr] is None:
+                self.clear_vr(vr)
+                return p
+
+        clean_vrs = [
+            vr for vr in self.pr_to_vr
+            if self.vr_spill[vr] is not None and vr != self.reserved_vr
+        ]
         if clean_vrs:
             vr = max(clean_vrs, key=lambda v: self.vr_nu[v])
             pr = self.vr_to_pr[vr]
