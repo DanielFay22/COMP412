@@ -79,5 +79,5 @@ IR_LN       = 13
 IR_IND      = 14
 
 
-CONSTANT =  0
-VALUE =     1
+CONSTANT    = 0
+ADDRESS     = 1

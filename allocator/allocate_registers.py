@@ -43,8 +43,22 @@ class Allocator(object):
             vr2 = op[IR_VR2]
             vr3 = op[IR_VR3]
 
+            # Store LOADI values for rematerialization later.
+            if op[IR_OP] == LOADI_VAL:
+                self.vr_spill[vr3] = (CONSTANT, op[IR_R1])
+
             # Unused declaration.
             if vr3 is not None and op[IR_NU3] is None:
+                if vr1 is not None:
+                    if op[IR_NU1] is not None:
+                        vr_nu[vr1] = op[IR_NU1]
+                    else:
+                        self.clear_vr(vr1)
+                if vr2 is not None:
+                    if op[IR_NU2] is not None:
+                        vr_nu[vr2] = op[IR_NU2]
+                    else:
+                        self.clear_vr(vr2)
                 continue
 
             if vr1 is not None:
@@ -67,15 +81,8 @@ class Allocator(object):
 
             self.reserved_vr = None
 
-            # vr3 corresponds to new declaration, so always needs new pr
-            if vr3 is not None:
-
-                p = self.get_pr()
-                self.assign_pr(vr3, p)
-
-                op[IR_PR3] = p
-
-
+            # Update next use and clear regs if necessary. Clearing before
+            # handling r3 allows for reuse of the same registers within an expression.
             if vr1 is not None:
                 if op[IR_NU1] is not None:
                     vr_nu[vr1] = op[IR_NU1]
@@ -86,6 +93,16 @@ class Allocator(object):
                     vr_nu[vr2] = op[IR_NU2]
                 else:
                     self.clear_vr(vr2)
+
+
+            # vr3 corresponds to new declaration, so always needs new pr
+            if vr3 is not None:
+                p = self.get_pr()
+                self.assign_pr(vr3, p)
+
+                op[IR_PR3] = p
+
+            # Update next use of vr3
             if vr3 is not None:
                 if op[IR_NU3] is not None:
                     vr_nu[vr3] = op[IR_NU3]
@@ -103,7 +120,8 @@ class Allocator(object):
             self.pr_to_vr[p] = None
             self.vr_to_pr[vr] = None
             if self.vr_spill[vr]:
-                self.open_addr.append(self.vr_spill[vr])
+                if self.vr_spill[vr][0] == ADDRESS:
+                    self.open_addr.append(self.vr_spill[vr][1])
                 self.vr_spill[vr] = None
 
 
@@ -122,12 +140,12 @@ class Allocator(object):
         """
 
         """
-        # If some value is already stored somewhere, you don't need to store it again.
         for p, vr in enumerate(self.pr_to_vr):
             if self.vr_nu[vr] is None:
                 self.clear_vr(vr)
                 return p
 
+        # If some value is already stored somewhere, you don't need to store it again.
         clean_vrs = [
             vr for vr in self.pr_to_vr
             if self.vr_spill[vr] is not None and vr != self.reserved_vr
@@ -167,7 +185,7 @@ class Allocator(object):
 
         self.vr_to_pr[vr] = None
         self.pr_to_vr[pr] = None
-        self.vr_spill[vr] = m
+        self.vr_spill[vr] = (ADDRESS, m)
 
         return pr
 
@@ -177,20 +195,30 @@ class Allocator(object):
         """
         pr = self.get_pr()
 
+        spill_val = self.vr_spill[vr]
+
         # Get address of spilled value
-        if self.vr_spill[vr] is not None:
+        if spill_val is not None:
 
-            self.new_ir.add_full_token(
-                op=LOADI_VAL,
-                r1=-1, vr1=vr, pr1=self.vr_spill[vr],
-                r3=self.spill_reg, vr3=self.ir.max_reg + 1, pr3=self.spill_reg
-            )
+            if spill_val[0] == ADDRESS:
+                self.new_ir.add_full_token(
+                    op=LOADI_VAL,
+                    r1=-1, vr1=vr, pr1=spill_val[1],
+                    r3=self.spill_reg, vr3=self.ir.max_reg + 1, pr3=self.spill_reg
+                )
 
-            self.new_ir.add_full_token(
-                op=LOAD_VAL,
-                r1=self.ir.max_reg + 1, vr1=vr, pr1=self.spill_reg,
-                r3=self.ir.max_reg + 1, vr3=self.ir.max_reg + 1, pr3=pr
-            )
+                self.new_ir.add_full_token(
+                    op=LOAD_VAL,
+                    r1=self.ir.max_reg + 1, vr1=vr, pr1=self.spill_reg,
+                    r3=self.ir.max_reg + 1, vr3=self.ir.max_reg + 1, pr3=pr
+                )
+
+            elif spill_val[0] == CONSTANT:
+                self.new_ir.add_full_token(
+                    op=LOADI_VAL,
+                    r1=-3, vr1=vr, pr1=spill_val[1],
+                    r3=self.ir.max_reg + 1, vr3=self.ir.max_reg + 1, pr3=pr
+                )
 
         else:
 
