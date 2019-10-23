@@ -46,6 +46,7 @@ class Allocator(object):
             # Store LOADI values for rematerialization later.
             if op[IR_OP] == LOADI_VAL:
                 self.vr_spill[vr3] = (CONSTANT, op[IR_R1])
+                vr_nu[vr3] = op[IR_NU3]
                 continue
 
             # Unused declaration.
