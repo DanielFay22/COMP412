@@ -142,10 +142,10 @@ class Allocator(object):
         """
 
         """
-        for p, vr in enumerate(self.pr_to_vr):
-            if self.vr_nu[vr] is None:
-                self.clear_vr(vr)
-                return p
+        # for p, vr in enumerate(self.pr_to_vr):
+        #     if self.vr_nu[vr] is None:
+        #         self.clear_vr(vr)
+        #         return p
 
         # If some value is already stored somewhere, you don't need to store it again.
         clean_vrs = [
