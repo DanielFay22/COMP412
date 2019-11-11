@@ -132,22 +132,19 @@ class Allocator(object):
 
         """
 
-        if None in self.pr_to_vr:
+        try:
             return self.pr_to_vr.index(None)
 
-        else:
+        except ValueError:
             return self.spill()
 
     def spill(self):
         """
 
         """
-        for p, vr in enumerate(self.pr_to_vr):
-            if self.vr_nu[vr] is None:
-                self.clear_vr(vr)
-                return p
 
         # If some value is already stored somewhere, you don't need to store it again.
+        # This includes all values declared with a loadI.
         clean_vrs = [
             vr for vr in self.pr_to_vr
             if self.vr_spill[vr] is not None and vr != self.reserved_vr
