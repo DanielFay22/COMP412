@@ -76,9 +76,6 @@ class InternalRepresentation(object):
 
         self._ir.append(tok[:])
 
-
-
-
     def print_ir(self):
         s = ""
 
@@ -95,6 +92,15 @@ class InternalRepresentation(object):
 
         for l in self._ir:
             s += self._gen_line_str_p(l)
+
+        print(s)
+
+    def to_code_v(self, header: str = ""):
+
+        s = header
+
+        for l in self._ir:
+            s += self._gen_line_str_v(l)
 
         print(s)
 
