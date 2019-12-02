@@ -34,12 +34,13 @@ class Scheduler(object):
         tree = self._dependence_tree
 
         i = 0
-        hc = 0
 
         ready = [(-t.latency(), -t.num_children, hc, t) for hc, t in enumerate(tree.heads)]
         heapq.heapify(ready)    # Use a heap to automatically track the highest latency ops available.
 
         active = []
+
+        hc = len(tree.heads)
 
         while ready or active:
 
