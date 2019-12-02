@@ -26,7 +26,6 @@ class MultiInternalRepresentation(object):
         for l in self._ir:
             s += "[" + self.to_code_op(l[0]) + ";" + self.to_code_op(l[1]) + "]\n"
         print(s)
-        print(len(s.splitlines()))
         
     @staticmethod
     def to_code_op(op):
