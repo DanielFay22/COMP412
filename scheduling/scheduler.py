@@ -1,5 +1,5 @@
 
-from collections import deque
+import heapq
 
 from core import *
 from .op_tree import OpTree, Node
@@ -34,25 +34,14 @@ class Scheduler(object):
         tree = self._dependence_tree
 
         i = 0
+        hc = 0
 
-        ready = tree.heads
+        ready = [(-t.latency(), -t.num_children, hc, t) for hc, t in enumerate(tree.heads)]
+        heapq.heapify(ready)    # Use a heap to automatically track the highest latency ops available.
+
         active = []
 
-
         while ready or active:
-
-
-            j = 0
-            while j < len(active):
-                if i >= active[j][0]:
-                    node = active.pop(j)[1]
-
-                    ready.extend([
-                        c for c in node.children if c.can_execute()
-                    ])
-
-                else:
-                    j += 1
 
             next_op1, next_op2 = None, None
 
@@ -60,19 +49,17 @@ class Scheduler(object):
                 self.new_ir.add_nop()
 
             elif len(ready) == 1:
-                next_op1 = ready.pop()
+                next_op1 = ready.pop()[-1]
                 next_op1.execute()
                 self.new_ir.add_op((next_op1.op,))
 
             else:
-                ready.sort(key=lambda o: (o.latency(), len(o.children)), reverse=True)
-
-                op1 = ready.pop(0)
+                op1 = heapq.heappop(ready)[-1]
                 op1_val = op1.op_val
 
-
+                op2 = None
                 for j in range(len(ready)):
-                    op2_val = ready[j].op_val
+                    op2_val = ready[j][-1].op_val
 
                     if op1_val == LOAD_VAL or op1_val == STORE_VAL:
                         if op2_val == LOAD_VAL or op2_val == STORE_VAL:
@@ -86,12 +73,8 @@ class Scheduler(object):
                         if op2_val == OUTPUT_VAL:
                             continue
 
+                    op2 = ready.pop(j)[-1]
                     break
-
-                if j < len(ready):
-                    op2 = ready.pop(j)
-                else:
-                    op2 = None
 
                 next_op1, next_op2 = op1, op2
 
@@ -104,21 +87,29 @@ class Scheduler(object):
                     self.new_ir.add_op((op1.op,))
 
 
+            # Add ops to the active queue.
             for next_op in [next_op1, next_op2]:
-
                 if next_op is not None:
-
                     active.append((next_op.latency() + i, next_op))
 
-                    # for c in next_op.children:
-                    #     if not c.visited:
-                    #         if c.can_execute(i):
-                    #             ready.append(c)
-                    #             c.visited = True
-                    #         elif c.all_parents_executed:
-                    #             available.append(c)
-                    #             c.visited = True
+
             i += 1
+
+            # Add in children of active ops that have completed.
+            # Performing this at the end prevents a single trailing nop from being added.
+            j = 0
+            while j < len(active):
+                if i >= active[j][0]:
+                    node = active.pop(j)[1]
+
+                    for c in node.children:
+                        if c.can_execute() and not c.visited:
+                            heapq.heappush(ready, (-c.latency(), -c.num_children, hc, c))
+                            hc += 1
+                            c.visited = True
+
+                else:
+                    j += 1
 
         return self.new_ir
 
@@ -175,12 +166,18 @@ class Scheduler(object):
                 assert vr2 is not None
 
                 parents = [all_nodes[vr1], all_nodes[vr2]]
+                parents = [p for p in parents if p is not None]
 
                 if last_store is not None:
                     parents += [last_store]
                 parents += all_load_out
 
                 node = Node(op, parents=parents)
+
+                # If a store has no parents then it's behavior is undefined,
+                # but it is technically a head node.
+                if not parents:
+                    tree.add_head(node)
 
                 for p in parents:
                     p.add_child(node)

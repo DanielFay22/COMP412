@@ -45,6 +45,10 @@ class Node(object):
     def children(self):
         return self._children[:]
 
+    @property
+    def num_children(self):
+        return len(self._children)
+
     def add_child(self, node):
         self._children.append(node)
 
