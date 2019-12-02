@@ -81,3 +81,20 @@ IR_IND      = 14
 
 CONSTANT    = 0
 ADDRESS     = 1
+
+
+
+
+LATENCIES = [
+    5,      # load
+    5,      # store
+    1,      # loadI
+    1,      # add
+    1,      # sub
+    3,      # mult
+    1,      # lshift
+    1,      # rshift
+    1,      # output
+    1,      # nop
+
+]

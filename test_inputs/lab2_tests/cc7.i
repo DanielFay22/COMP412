@@ -1,4 +1,5 @@
 loadI 1024 => r0
+loadI 0 => r1
 store r0 => r1
 load r1 => r0
 loadI 1028 => r1

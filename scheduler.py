@@ -34,7 +34,7 @@ def schedule(filereader):
 
     scheduler.schedule()
 
-    scheduler.new_ir.to_code_v(header = "// Filler comment\n// --- start of renamed code\n")
+    scheduler.new_ir.to_code(header = "// Filler comment\n// --- start of renamed code\n")
 
 
 def help_handler():
