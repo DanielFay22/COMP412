@@ -30,8 +30,10 @@ class OpTree(object):
 
         i = 1
         for n in self._heads:
-            s += f" {i} [label = \"{MultiInternalRepresentation.to_code_op(n.op)}\" ];\n"
-            s += f" 0 -> {i} ;\n"
+            s += " {0} [label = \"{1}\" ];\n".format(
+                i, MultiInternalRepresentation.to_code_op(n.op)
+            )
+            s += f" 0 -> {0} ;\n".format(i)
 
             visited.append(n)
 
@@ -43,19 +45,21 @@ class OpTree(object):
             n = queue.pop()
             visited.append(n)
 
-            s += f" {i} [label = \"{MultiInternalRepresentation.to_code_op(n.op)}\" ];\n"
+            s += " {0} [label = \"{1}\" ];\n".format(
+                i, MultiInternalRepresentation.to_code_op(n.op)
+            )
 
             for p in n.parents:
                 if p in visited:
                     ind = visited.index(p)
 
-                    s += f" {ind} -> {i} ;\n"
+                    s += f" {0} -> {1} ;\n".format(ind, i)
 
             for c in n.children:
                 if c in visited:
                     ind = visited.index(c)
 
-                    s += f" {i} -> {ind} ;\n"
+                    s += f" {0} -> {1} ;\n".format(i, ind)
                 else:
                     queue.append(c)
 
