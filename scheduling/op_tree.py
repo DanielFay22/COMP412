@@ -1,6 +1,6 @@
 
 from resources import *
-
+from .multi_op_ir import MultiInternalRepresentation
 
 
 
@@ -20,6 +20,52 @@ class OpTree(object):
         return self._heads[:]
 
 
+    def gen_dot_file(self):
+        s = "digraph report\n{"
+
+        s += "\n 0 [label = \"s\"];\n"
+
+        visited = [None]
+        queue = []
+
+        i = 1
+        for n in self._heads:
+            s += f" {i} [label = \"{MultiInternalRepresentation.to_code_op(n.op)}\" ];\n"
+            s += f" 0 -> {i} ;\n"
+
+            visited.append(n)
+
+            i += 1
+
+            queue.extend(n.children)
+
+        while queue:
+            n = queue.pop()
+            visited.append(n)
+
+            s += f" {i} [label = \"{MultiInternalRepresentation.to_code_op(n.op)}\" ];\n"
+
+            for p in n.parents:
+                if p in visited:
+                    ind = visited.index(p)
+
+                    s += f" {ind} -> {i} ;\n"
+
+            for c in n.children:
+                if c in visited:
+                    ind = visited.index(c)
+
+                    s += f" {i} -> {ind} ;\n"
+                else:
+                    queue.append(c)
+
+            i += 1
+
+        s += "}"
+
+        print(s)
+
+
 
 
 class Node(object):
@@ -36,6 +82,8 @@ class Node(object):
         self.all_parents_executed = False
 
         self.visited = False
+
+        self._cp = None
 
     @property
     def parents(self):
@@ -77,3 +125,38 @@ class Node(object):
 
     def execute(self):
         self.executed = True
+
+    @property
+    def critical_path(self):
+        if self._cp is None:
+            self._cp = self.latency()
+            if self._children:
+                self._cp += max([c.critical_path for c in self._children])
+
+        return self._cp
+
+
+class SerializedNode(Node):
+
+    def __init__(self, op, parents=None, serialized_parents=None, children=None):
+
+        super(SerializedNode, self).__init__(op, parents, children)
+
+        self._serial_depends = serialized_parents[:]
+
+
+    def can_execute(self):
+
+        if self.all_parents_executed: return True
+
+        for p in self.parents:
+            if not p.executed:
+                return False
+
+        for s in self._serial_depends:
+            if not s.visited:
+                return False
+
+        self.all_parents_executed = True
+
+        return True

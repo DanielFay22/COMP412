@@ -2,7 +2,7 @@
 import heapq
 
 from core import *
-from .op_tree import OpTree, Node
+from .op_tree import OpTree, Node, SerializedNode
 from .multi_op_ir import MultiInternalRepresentation
 from resources import *
 
@@ -35,7 +35,7 @@ class Scheduler(object):
 
         i = 0
 
-        ready = [(-t.latency(), -t.num_children, hc, t) for hc, t in enumerate(tree.heads)]
+        ready = [(-t.latency(), -t.critical_path, -t.num_children, hc, t) for hc, t in enumerate(tree.heads)]
         heapq.heapify(ready)    # Use a heap to automatically track the highest latency ops available.
 
         active = []
@@ -103,7 +103,7 @@ class Scheduler(object):
 
                     for c in node.children:
                         if c.can_execute() and not c.visited:
-                            heapq.heappush(ready, (-c.latency(), -c.num_children, hc, c))
+                            heapq.heappush(ready, (-c.latency(), -c.critical_path, -c.num_children, hc, c))
                             hc += 1
                             c.visited = True
 
@@ -167,18 +167,19 @@ class Scheduler(object):
                 parents = [all_nodes[vr1], all_nodes[vr2]]
                 parents = [p for p in parents if p is not None]
 
+                sparents = []
                 if last_store is not None:
-                    parents += [last_store]
-                parents += all_load_out
+                    sparents += [last_store]
+                sparents += all_load_out
 
-                node = Node(op, parents=parents)
+                node = SerializedNode(op, parents=parents, serialized_parents=sparents)
 
                 # If a store has no parents then it's behavior is undefined,
                 # but it is technically a head node.
-                if not parents:
+                if not parents and not sparents:
                     tree.add_head(node)
 
-                for p in parents:
+                for p in parents + sparents:
                     p.add_child(node)
 
                 last_store = node
@@ -186,15 +187,16 @@ class Scheduler(object):
             elif op_val == OUTPUT_VAL:
 
                 parents = []
+                sparents = []
 
                 if last_store is not None:
                     parents += [last_store]
                 if last_output is not None:
-                    parents += [last_output]
+                    sparents += [last_output]
 
-                node = Node(op, parents=parents)
+                node = SerializedNode(op, parents=parents, serialized_parents=sparents)
 
-                for p in parents:
+                for p in parents + sparents:
                     p.add_child(node)
 
                 # If this output occured before any other output or write to memory,

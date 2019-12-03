@@ -11,10 +11,13 @@ from scheduling import *
 import cProfile
 
 
+sched = None
+
 def schedule(filereader):
     """
 
     """
+    global sched
 
     scanner = Scanner(fr=filereader)
 
@@ -35,6 +38,8 @@ def schedule(filereader):
     scheduler.schedule()
 
     scheduler.new_ir.to_code(header = "// Filler comment\n// --- start of renamed code\n")
+
+    sched = scheduler
 
 
 def help_handler():
