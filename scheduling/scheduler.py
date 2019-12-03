@@ -87,6 +87,7 @@ class Scheduler(object):
             # Add ops to the active queue.
             for next_op in [next_op1, next_op2]:
                 if next_op is not None:
+                    next_op.scheduled = True
                     active.append((next_op.latency() + i, next_op))
 
 

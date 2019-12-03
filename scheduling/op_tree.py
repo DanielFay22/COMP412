@@ -81,11 +81,11 @@ class Node(object):
         self._parents = parents if parents is not None else []
         self._children = children if children is not None else []
 
-        self.executed = False
-
         self.all_parents_executed = False
 
         self.visited = False
+        self.executed = False
+        self.scheduled = False
 
         self._cp = None
 
@@ -158,7 +158,7 @@ class SerializedNode(Node):
                 return False
 
         for s in self._serial_depends:
-            if not s.visited:
+            if not s.scheduled:
                 return False
 
         self.all_parents_executed = True
