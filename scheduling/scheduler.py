@@ -51,7 +51,6 @@ class Scheduler(object):
 
             elif len(ready) == 1:
                 next_op1 = ready.pop()[-1]
-                next_op1.execute()
                 self.new_ir.add_op((next_op1.op,))
 
             else:
@@ -79,10 +78,7 @@ class Scheduler(object):
 
                 next_op1, next_op2 = op1, op2
 
-
-                op1.execute()
                 if op2 is not None:
-                    op2.execute()
                     self.new_ir.add_op((op1.op, op2.op))
                 else:
                     self.new_ir.add_op((op1.op,))
@@ -102,6 +98,8 @@ class Scheduler(object):
             while j < len(active):
                 if i >= active[j][0]:
                     node = active.pop(j)[1]
+
+                    node.execute()
 
                     for c in node.children:
                         if c.can_execute() and not c.visited:
