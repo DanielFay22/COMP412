@@ -203,6 +203,7 @@ class Scheduler(object):
                     tree.add_head(node)
 
                 last_output = node
+                all_load_out.append(node)
 
             # All arithops have the same dependency structure.
             else:
