@@ -71,18 +71,21 @@ class OpTree(object):
         print(s)
 
     def get_leaves(self):
+        """
+        Finds the leaves by traversing the tree.
+        """
 
         nodes = self._heads[:]
         leaves = []
 
-        visited = {n for n in nodes}
+        visited = set(nodes)
 
         while nodes:
             n = nodes.pop()
 
             if n.children:
-                unvisited = {c for c in n.children if c not in visited}
-                nodes.extend(list(unvisited))
+                unvisited = [c for c in n.children if c not in visited]
+                nodes.extend(unvisited)
                 visited.update(unvisited)
 
             else:
@@ -95,29 +98,26 @@ class OpTree(object):
         One time calculation to find the critical path for every node.
         """
         visited = set([])
-        nodes = set(self.get_leaves())
+        nodes = self.get_leaves()
         for n in nodes:
             n.update_critical_path(n.latency())
 
         while nodes:
-            n = nodes.pop()
+            n = nodes.pop(0)
             visited.add(n)
             cp = n.critical_path
 
             for p in n.parents:
                 p.update_critical_path(cp + p.latency())
                 if p not in visited:
-                    nodes.add(p)
+                    nodes.append(p)
                     visited.add(p)
 
             for d in n.serial_parents:
                 d.update_critical_path(cp + 1)
                 if d not in visited:
-                    nodes.add(d)
+                    nodes.append(d)
                     visited.add(d)
-
-
-
 
 
 
@@ -162,7 +162,7 @@ class Node(object):
 
     @property
     def num_children(self):
-        return len(self._children)
+        return len(self._children) + len(self._serial_children)
 
     @property
     def val(self):
@@ -206,12 +206,12 @@ class Node(object):
 
     @property
     def critical_path(self):
-        if self._cp is None:
-            self._cp = self.latency()
-            if self._children:
-                self._cp += max([c.critical_path for c in self._children])
-
-            self._cp = max(self._cp, 1 + max([0] + [n.critical_path for n in self._serial_children]))
+        # if self._cp is None:
+        #     self._cp = self.latency()
+        #     if self._children:
+        #         self._cp += max([c.critical_path for c in self._children])
+        #
+        #     self._cp = max(self._cp, 1 + max([0] + [n.critical_path for n in self._serial_children]))
 
         return self._cp
 

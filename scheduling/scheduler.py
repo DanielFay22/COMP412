@@ -34,8 +34,9 @@ class Scheduler(object):
         tree = self._dependence_tree
 
         i = 0
+        a,b = 1, 1
 
-        ready = [(-t.latency() - t.critical_path, -t.num_children, hc, t) for hc, t in enumerate(tree.heads)]
+        ready = [(-a * t.latency() - b * t.critical_path, -t.num_children, hc, t) for hc, t in enumerate(tree.heads)]
         heapq.heapify(ready)    # Use a heap to automatically track the highest priority ops available.
 
         active = []
@@ -91,9 +92,10 @@ class Scheduler(object):
                     next_op.scheduled = True
                     active.append((next_op.latency() + i, next_op))
 
+                    # Add any serialized children which are otherwise able to execute
                     for c in next_op.serial_children:
                         if c.can_execute() and not c.visited:
-                            heapq.heappush(ready, (-c.latency() - c.critical_path, -c.num_children, hc, c))
+                            heapq.heappush(ready, (-a * c.latency() - b * c.critical_path, -c.num_children, hc, c))
                             hc += 1
                             c.visited = True
 
@@ -111,7 +113,7 @@ class Scheduler(object):
 
                     for c in node.children:
                         if c.can_execute() and not c.visited:
-                            heapq.heappush(ready, (-c.latency() - c.critical_path, -c.num_children, hc, c))
+                            heapq.heappush(ready, (-a * c.latency() - b * c.critical_path, -c.num_children, hc, c))
                             hc += 1
                             c.visited = True
 
@@ -127,25 +129,26 @@ class Scheduler(object):
 
         all_nodes = [None] * (self._ir.max_reg + 1)
 
-
         last_output = None
-
         stores = []
-
         all_load = []
 
 
         for op in self._ir.ir:
             op_val = op[IR_OP]
+
+            # nop
             if op_val == NOP_VAL:
                 continue
+
+            # loadI
             elif op_val == LOADI_VAL:
                 node = Node(op, val=op[IR_R1])
 
                 all_nodes[op[IR_VR3]] = node
                 tree.add_head(node)
 
-            # LOAD
+            # load
             elif op_val == LOAD_VAL:
                 vr1 = op[IR_VR1]
                 vr3 = op[IR_VR3]
@@ -182,7 +185,7 @@ class Scheduler(object):
 
                 all_load.append(node)
 
-            # STORE
+            # store
             elif op_val == STORE_VAL:
                 vr1 = op[IR_VR1]
                 vr2 = op[IR_VR2]
@@ -213,24 +216,22 @@ class Scheduler(object):
                     sparents = [stores[s]]
                     break
 
-                # if last_store is not None:
-                #     sparents += [last_store]
                 if last_output is not None:
                     sparents += [last_output]
                 sparents += all_load
 
                 node = SerializedNode(op, parents=parents, serialized_parents=sparents, val=val, addr=addr)
 
-                for p in parents:
+                for p in parents + sparents:
                     p.add_child(node)
 
                 stores.append(node)
 
+            # output
             elif op_val == OUTPUT_VAL:
 
                 parents = []
                 sparents = []
-
 
                 # Add dependency to last store which could write to address
                 addr = op[IR_R1]
@@ -248,7 +249,7 @@ class Scheduler(object):
 
                 node = SerializedNode(op, parents=parents, serialized_parents=sparents, addr=addr)
 
-                for p in parents:
+                for p in parents + sparents:
                     p.add_child(node)
 
                 # If this output occured before any other output or write to memory,
