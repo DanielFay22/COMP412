@@ -93,6 +93,8 @@ class Node(object):
         self._val = val
         self._addr = addr
 
+        self._serial_children = []
+
     @property
     def parents(self):
         return self._parents[:]
@@ -100,6 +102,10 @@ class Node(object):
     @property
     def children(self):
         return self._children[:]
+
+    @property
+    def serial_children(self):
+        return self._serial_children[:]
 
     @property
     def num_children(self):
@@ -115,6 +121,9 @@ class Node(object):
 
     def add_child(self, node):
         self._children.append(node)
+
+    def add_serial_child(self, n):
+        self._serial_children.append(n)
 
     def can_execute(self):
 
@@ -149,6 +158,8 @@ class Node(object):
             if self._children:
                 self._cp += max([c.critical_path for c in self._children])
 
+            self._cp = max(self._cp, 1 + max([0] + [n.critical_path for n in self._serial_children]))
+
         return self._cp
 
 
@@ -160,6 +171,9 @@ class SerializedNode(Node):
         super(SerializedNode, self).__init__(op, parents, children, val, addr)
 
         self._serial_depends = serialized_parents[:]
+
+        for n in self._serial_depends:
+            n.add_serial_child(self)
 
 
     def can_execute(self):
