@@ -70,6 +70,55 @@ class OpTree(object):
 
         print(s)
 
+    def get_leaves(self):
+
+        nodes = self._heads[:]
+        leaves = []
+
+        visited = {n for n in nodes}
+
+        while nodes:
+            n = nodes.pop()
+
+            if n.children:
+                unvisited = {c for c in n.children if c not in visited}
+                nodes.extend(list(unvisited))
+                visited.update(unvisited)
+
+            else:
+                leaves.append(n)
+
+        return leaves
+
+    def calc_critical_paths(self):
+        """
+        One time calculation to find the critical path for every node.
+        """
+        visited = set([])
+        nodes = set(self.get_leaves())
+        for n in nodes:
+            n.update_critical_path(n.latency())
+
+        while nodes:
+            n = nodes.pop()
+            visited.add(n)
+            cp = n.critical_path
+
+            for p in n.parents:
+                p.update_critical_path(cp + p.latency())
+                if p not in visited:
+                    nodes.add(p)
+                    visited.add(p)
+
+            for d in n.serial_parents:
+                d.update_critical_path(cp + 1)
+                if d not in visited:
+                    nodes.add(d)
+                    visited.add(d)
+
+
+
+
 
 
 
@@ -106,6 +155,10 @@ class Node(object):
     @property
     def serial_children(self):
         return self._serial_children[:]
+
+    @property
+    def serial_parents(self):
+        return []
 
     @property
     def num_children(self):
@@ -162,6 +215,13 @@ class Node(object):
 
         return self._cp
 
+    def update_critical_path(self, c):
+        if self._cp is None:
+            self._cp = c
+        else:
+            self._cp = max(self._cp, c)
+
+
 
 
 class SerializedNode(Node):
@@ -191,3 +251,7 @@ class SerializedNode(Node):
         self.all_parents_executed = True
 
         return True
+
+    @property
+    def serial_parents(self):
+        return self._serial_depends[:]

@@ -128,7 +128,6 @@ class Scheduler(object):
         all_nodes = [None] * (self._ir.max_reg + 1)
 
 
-        last_store = None
         last_output = None
 
         stores = []
@@ -165,11 +164,13 @@ class Scheduler(object):
                     if p1.val in tree.memmap:
                         val = tree.memmap[p1.val]
 
-                for s in range(len(stores) - 1, -1, -1):
+                s = len(stores) - 1
+                while s >= 0:
                     if addr is not None and stores[s].addr is not None and addr != stores[s].addr:
+                        s -= 1
                         continue
 
-                    parents += [stores[s]]
+                    parents.append(stores[s])
                     break
 
                 node = Node(op, parents=parents, val=val, addr=addr)
@@ -203,11 +204,13 @@ class Scheduler(object):
 
                 sparents = []
 
-                for s in range(len(stores) - 1, -1, -1):
+                s = len(stores) - 1
+                while s >= 0:
                     if addr is not None and stores[s].addr is not None and addr != stores[s].addr:
+                        s -= 1
                         continue
 
-                    sparents += [stores[s]]
+                    sparents = [stores[s]]
                     break
 
                 # if last_store is not None:
@@ -218,15 +221,9 @@ class Scheduler(object):
 
                 node = SerializedNode(op, parents=parents, serialized_parents=sparents, val=val, addr=addr)
 
-                # If a store has no parents then it's behavior is undefined,
-                # but it is technically a head node.
-                if not parents and not sparents:
-                    tree.add_head(node)
-
-                for p in parents + sparents:
+                for p in parents:
                     p.add_child(node)
 
-                last_store = node
                 stores.append(node)
 
             elif op_val == OUTPUT_VAL:
@@ -237,11 +234,13 @@ class Scheduler(object):
 
                 # Add dependency to last store which could write to address
                 addr = op[IR_R1]
-                for s in range(len(stores) - 1, -1, -1):
+                s = len(stores) - 1
+                while s >= 0:
                     if stores[s].addr is not None and addr != stores[s].addr:
+                        s -= 1
                         continue
 
-                    parents += [stores[s]]
+                    parents = [stores[s]]
                     break
 
                 if last_output is not None:
@@ -249,7 +248,7 @@ class Scheduler(object):
 
                 node = SerializedNode(op, parents=parents, serialized_parents=sparents, addr=addr)
 
-                for p in parents + sparents:
+                for p in parents:
                     p.add_child(node)
 
                 # If this output occured before any other output or write to memory,
@@ -297,5 +296,5 @@ class Scheduler(object):
 
                 all_nodes[vr3] = node
 
-
+        tree.calc_critical_paths()
         self._dependence_tree = tree
