@@ -11,6 +11,7 @@ class OpTree(object):
 
     def __init__(self):
         self._heads = []
+        self.memmap = {}
 
     def add_head(self, node):
         self._heads.append(node)
@@ -74,7 +75,7 @@ class OpTree(object):
 
 class Node(object):
 
-    def __init__(self, op, parents=None, children=None):
+    def __init__(self, op, parents=None, children=None, val=None, addr=None):
 
         self._op = op
 
@@ -89,6 +90,9 @@ class Node(object):
 
         self._cp = None
 
+        self._val = val
+        self._addr = addr
+
     @property
     def parents(self):
         return self._parents[:]
@@ -100,6 +104,14 @@ class Node(object):
     @property
     def num_children(self):
         return len(self._children)
+
+    @property
+    def val(self):
+        return self._val
+
+    @property
+    def addr(self):
+        return self._addr
 
     def add_child(self, node):
         self._children.append(node)
@@ -139,12 +151,48 @@ class Node(object):
 
         return self._cp
 
+    def calculate_val(self):
+        op = self._op[IR_OP]
+
+        parent_vals = [p.val for p in self.parents]
+
+        if op == LOADI_VAL:
+            self._val = self._op[IR_R1]
+            return
+
+        elif op in [ADD_VAL, SUB_VAL, MULT_VAL, RSHIFT_VAL, LSHIFT_VAL]:
+            if None in parent_vals or len(parent_vals) != 2:
+                return
+
+            if op == ADD_VAL:
+                self._val = sum(parent_vals)
+            elif op == SUB_VAL:
+                pass    # Need to figure out how to order these
+            elif op == MULT_VAL:
+                self._val = parent_vals[0] * parent_vals[1]
+            elif op == RSHIFT_VAL:
+                pass
+            elif op == LSHIFT_VAL:
+                pass
+
+            return
+
+        elif op == LOAD_VAL:
+            if len(self._parents) != 1:
+                return
+
+            self._addr = self._parents[0].val
+
+        elif op == STORE_VAL:
+            pass
+
+
 
 class SerializedNode(Node):
 
-    def __init__(self, op, parents=None, serialized_parents=None, children=None):
+    def __init__(self, op, parents=None, serialized_parents=None, children=None, val=None, addr=None):
 
-        super(SerializedNode, self).__init__(op, parents, children)
+        super(SerializedNode, self).__init__(op, parents, children, val, addr)
 
         self._serial_depends = serialized_parents[:]
 

@@ -36,7 +36,7 @@ class Scheduler(object):
         i = 0
 
         ready = [(-t.latency(), -t.critical_path, -t.num_children, hc, t) for hc, t in enumerate(tree.heads)]
-        heapq.heapify(ready)    # Use a heap to automatically track the highest latency ops available.
+        heapq.heapify(ready)    # Use a heap to automatically track the highest priority ops available.
 
         active = []
 
@@ -53,6 +53,7 @@ class Scheduler(object):
                 next_op1 = ready.pop()[-1]
                 self.new_ir.add_op((next_op1.op,))
 
+            # If multiple ops are ready, decide which ones to schedule.
             else:
                 op1 = heapq.heappop(ready)[-1]
                 op1_val = op1.op_val
@@ -124,6 +125,8 @@ class Scheduler(object):
         last_store = None
         last_output = None
 
+        stores = []
+
         all_load_out = []
 
 
@@ -132,7 +135,7 @@ class Scheduler(object):
             if op_val == NOP_VAL:
                 continue
             elif op_val == LOADI_VAL:
-                node = Node(op)
+                node = Node(op, val=op[IR_R1])
 
                 all_nodes[op[IR_VR3]] = node
                 tree.add_head(node)
@@ -146,10 +149,23 @@ class Scheduler(object):
 
                 parents = [all_nodes[vr1]]
 
-                if last_store is not None:
-                    parents += [last_store]
+                # If memory is a known location and value store for later optimization
+                val = None
+                addr = None
+                p1 = all_nodes[vr1]
+                if p1.val is not None:
+                    addr = p1.val
+                    if p1.val in tree.memmap:
+                        val = tree.memmap[p1.val]
 
-                node = Node(op, parents=parents)
+                for s in range(len(stores) - 1, -1, -1):
+                    if addr is not None and stores[s].addr is not None and addr != stores[s].addr:
+                        continue
+
+                    parents += [stores[s]]
+                    break
+
+                node = Node(op, parents=parents, val=val, addr=addr)
 
                 for p in parents:
                     p.add_child(node)
@@ -166,14 +182,22 @@ class Scheduler(object):
                 assert vr2 is not None
 
                 parents = [all_nodes[vr1], all_nodes[vr2]]
-                parents = [p for p in parents if p is not None]
+
+                if None in parents:
+                    error("Undeclared register in store op at line {}".format(op[IR_LN]))
+                    exit()
+
+                val = parents[0].val
+                addr = parents[1].val
 
                 sparents = []
                 if last_store is not None:
                     sparents += [last_store]
+                if last_output is not None:
+                    sparents += [last_output]
                 sparents += all_load_out
 
-                node = SerializedNode(op, parents=parents, serialized_parents=sparents)
+                node = SerializedNode(op, parents=parents, serialized_parents=sparents, val=val, addr=addr)
 
                 # If a store has no parents then it's behavior is undefined,
                 # but it is technically a head node.
@@ -184,18 +208,27 @@ class Scheduler(object):
                     p.add_child(node)
 
                 last_store = node
+                stores.append(node)
 
             elif op_val == OUTPUT_VAL:
 
                 parents = []
                 sparents = []
 
-                if last_store is not None:
-                    parents += [last_store]
+
+                # Add dependency to last store which could write to address
+                addr = op[IR_R1]
+                for s in range(len(stores) - 1, -1, -1):
+                    if stores[s].addr is not None and addr != stores[s].addr:
+                        continue
+
+                    parents += [stores[s]]
+                    break
+
                 if last_output is not None:
                     sparents += [last_output]
 
-                node = SerializedNode(op, parents=parents, serialized_parents=sparents)
+                node = SerializedNode(op, parents=parents, serialized_parents=sparents, addr=addr)
 
                 for p in parents + sparents:
                     p.add_child(node)
@@ -206,7 +239,6 @@ class Scheduler(object):
                     tree.add_head(node)
 
                 last_output = node
-                all_load_out.append(node)
 
             # All arithops have the same dependency structure.
             else:
@@ -218,7 +250,24 @@ class Scheduler(object):
                 assert vr2 is not None
 
                 parents = [all_nodes[vr1], all_nodes[vr2]]
-                node = Node(op, parents=parents)
+
+                opcode = op[IR_OP]
+                parent_vals = [p.val for p in parents]
+                val = None
+
+                if None not in parent_vals:
+                    if opcode == ADD_VAL:
+                        val = sum(parent_vals)
+                    elif opcode == SUB_VAL:
+                        val = parent_vals[0] - parent_vals[1]
+                    elif opcode == MULT_VAL:
+                        val = parent_vals[0] * parent_vals[1]
+                    elif opcode == RSHIFT_VAL:
+                        val = parent_vals[0] >> parent_vals[1]
+                    elif op == LSHIFT_VAL:
+                        val = parent_vals[0] << parent_vals[1]
+
+                node = Node(op, parents=parents, val=val)
 
                 for p in parents:
                     p.add_child(node)
