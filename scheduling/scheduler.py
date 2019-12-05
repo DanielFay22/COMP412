@@ -158,12 +158,15 @@ class Scheduler(object):
                     if p1.val in tree.memmap:
                         val = tree.memmap[p1.val]
 
-                for s in range(len(stores) - 1, -1, -1):
-                    if addr is not None and stores[s].addr is not None and addr != stores[s].addr:
-                        continue
+                # for s in range(len(stores) - 1, -1, -1):
+                #     if addr is not None and stores[s].addr is not None and addr != stores[s].addr:
+                #         continue
+                #
+                #     parents += [stores[s]]
+                #     break
 
-                    parents += [stores[s]]
-                    break
+                if last_store is not None:
+                    parents += [last_store]
 
                 node = Node(op, parents=parents, val=val, addr=addr)
 
@@ -218,12 +221,15 @@ class Scheduler(object):
 
                 # Add dependency to last store which could write to address
                 addr = op[IR_R1]
-                for s in range(len(stores) - 1, -1, -1):
-                    if stores[s].addr is not None and addr != stores[s].addr:
-                        continue
+                # for s in range(len(stores) - 1, -1, -1):
+                #     if stores[s].addr is not None and addr != stores[s].addr:
+                #         continue
+                #
+                #     parents += [stores[s]]
+                #     break
 
-                    parents += [stores[s]]
-                    break
+                if last_store is not None:
+                    parents += [last_store]
 
                 if last_output is not None:
                     sparents += [last_output]
