@@ -151,41 +151,6 @@ class Node(object):
 
         return self._cp
 
-    def calculate_val(self):
-        op = self._op[IR_OP]
-
-        parent_vals = [p.val for p in self.parents]
-
-        if op == LOADI_VAL:
-            self._val = self._op[IR_R1]
-            return
-
-        elif op in [ADD_VAL, SUB_VAL, MULT_VAL, RSHIFT_VAL, LSHIFT_VAL]:
-            if None in parent_vals or len(parent_vals) != 2:
-                return
-
-            if op == ADD_VAL:
-                self._val = sum(parent_vals)
-            elif op == SUB_VAL:
-                pass    # Need to figure out how to order these
-            elif op == MULT_VAL:
-                self._val = parent_vals[0] * parent_vals[1]
-            elif op == RSHIFT_VAL:
-                pass
-            elif op == LSHIFT_VAL:
-                pass
-
-            return
-
-        elif op == LOAD_VAL:
-            if len(self._parents) != 1:
-                return
-
-            self._addr = self._parents[0].val
-
-        elif op == STORE_VAL:
-            pass
-
 
 
 class SerializedNode(Node):
