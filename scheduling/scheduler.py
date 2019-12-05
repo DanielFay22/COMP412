@@ -34,9 +34,9 @@ class Scheduler(object):
         tree = self._dependence_tree
 
         i = 0
-        a,b = 1, 1
+        a,b = 1,1
 
-        ready = [(-a * t.latency() - b * t.critical_path, -t.num_children, hc, t) for hc, t in enumerate(tree.heads)]
+        ready = [(-a * t.latency(), - b * t.critical_path, -t.num_children, hc, t) for hc, t in enumerate(tree.heads)]
         heapq.heapify(ready)    # Use a heap to automatically track the highest priority ops available.
 
         active = []
@@ -95,7 +95,7 @@ class Scheduler(object):
                     # Add any serialized children which are otherwise able to execute
                     for c in next_op.serial_children:
                         if c.can_execute() and not c.visited:
-                            heapq.heappush(ready, (-a * c.latency() - b * c.critical_path, -c.num_children, hc, c))
+                            heapq.heappush(ready, (-a * c.latency(), - b * c.critical_path, -c.num_children, hc, c))
                             hc += 1
                             c.visited = True
 
@@ -111,9 +111,9 @@ class Scheduler(object):
 
                     node.execute()
 
-                    for c in node.children:
+                    for c in node.all_children:
                         if c.can_execute() and not c.visited:
-                            heapq.heappush(ready, (-a * c.latency() - b * c.critical_path, -c.num_children, hc, c))
+                            heapq.heappush(ready, (-a * c.latency(), - b * c.critical_path, -c.num_children, hc, c))
                             hc += 1
                             c.visited = True
 
@@ -222,7 +222,7 @@ class Scheduler(object):
 
                 node = SerializedNode(op, parents=parents, serialized_parents=sparents, val=val, addr=addr)
 
-                for p in parents + sparents:
+                for p in parents:
                     p.add_child(node)
 
                 stores.append(node)
@@ -249,7 +249,7 @@ class Scheduler(object):
 
                 node = SerializedNode(op, parents=parents, serialized_parents=sparents, addr=addr)
 
-                for p in parents + sparents:
+                for p in parents:
                     p.add_child(node)
 
                 # If this output occured before any other output or write to memory,

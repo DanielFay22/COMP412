@@ -83,8 +83,8 @@ class OpTree(object):
         while nodes:
             n = nodes.pop()
 
-            if n.children:
-                unvisited = [c for c in n.children if c not in visited]
+            if n.all_children:
+                unvisited = [c for c in n.all_children if c not in visited]
                 nodes.extend(unvisited)
                 visited.update(unvisited)
 
@@ -98,26 +98,25 @@ class OpTree(object):
         One time calculation to find the critical path for every node.
         """
         visited = set([])
-        nodes = self.get_leaves()
-        for n in nodes:
-            n.update_critical_path(n.latency())
+        nodes = set(self.get_leaves())
 
         while nodes:
-            n = nodes.pop(0)
+            n = nodes.pop()
+            n.update_critical_path(n.latency())
             visited.add(n)
             cp = n.critical_path
 
             for p in n.parents:
                 p.update_critical_path(cp + p.latency())
-                if p not in visited:
-                    nodes.append(p)
-                    visited.add(p)
+                # if p not in visited:
+                nodes.add(p)
+                    # visited.add(p)
 
             for d in n.serial_parents:
                 d.update_critical_path(cp + 1)
-                if d not in visited:
-                    nodes.append(d)
-                    visited.add(d)
+                # if d not in visited:
+                nodes.add(d)
+                    # visited.add(d)
 
 
 
@@ -144,6 +143,9 @@ class Node(object):
 
         self._serial_children = []
 
+    def __str__(self):
+        return MultiInternalRepresentation.to_code_op(self._op)
+
     @property
     def parents(self):
         return self._parents[:]
@@ -151,6 +153,10 @@ class Node(object):
     @property
     def children(self):
         return self._children[:]
+
+    @property
+    def all_children(self):
+        return self._children + self._serial_children
 
     @property
     def serial_children(self):
@@ -162,7 +168,7 @@ class Node(object):
 
     @property
     def num_children(self):
-        return len(self._children) + len(self._serial_children)
+        return len(self._children)
 
     @property
     def val(self):
@@ -230,7 +236,7 @@ class SerializedNode(Node):
 
         super(SerializedNode, self).__init__(op, parents, children, val, addr)
 
-        self._serial_depends = serialized_parents[:]
+        self._serial_depends = [p for p in serialized_parents if p not in parents]
 
         for n in self._serial_depends:
             n.add_serial_child(self)
