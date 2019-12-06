@@ -164,7 +164,7 @@ class Scheduler(object):
                 p1 = all_nodes[vr1]
                 if p1.val is not None:
                     addr = p1.val
-                    if p1.val in tree.memmap:
+                    if addr in tree.memmap:
                         val = tree.memmap[p1.val]
 
                 s = len(stores) - 1
@@ -218,7 +218,11 @@ class Scheduler(object):
 
                 if last_output is not None:
                     sparents += [last_output]
-                sparents += all_load
+
+                if addr:
+                    sparents += [l for l in all_load if l.addr is None or l.addr == addr]
+                else:
+                    sparents += all_load
 
                 node = SerializedNode(op, parents=parents, serialized_parents=sparents, val=val, addr=addr)
 
